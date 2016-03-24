@@ -1,6 +1,6 @@
 # coding=utf-8
 from flask.ext.api import FlaskAPI, settings
-from flask.ext.api.renderers import JSONRenderer
+from flask.ext.api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask import Blueprint
 from flask.ext.api.parsers import BaseParser
 from flask._compat import text_type
@@ -43,6 +43,16 @@ class MicroserviceJSONRenderer(JSONRenderer):
         indent = options.get('indent', indent)
         return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent, encoding=self.charset)
 
+class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer):
+
+    max_length = 10000
+
+    def render(self, data, *args, **options):
+
+        result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
+        return result[:self.max_length]
+
+
 class MicroserviceAPISettings(settings.APISettings):
 
     @property
@@ -60,7 +70,7 @@ class MicroserviceAPISettings(settings.APISettings):
     def DEFAULT_RENDERERS(self):
         default = [
             MicroserviceJSONRenderer,
-            'flask_api.renderers.BrowsableAPIRenderer'
+            MicroserviceBrowsableAPIRenderer,
         ]
         val = self.user_config.get('DEFAULT_RENDERERS', default)
         return settings.perform_imports(val, 'DEFAULT_RENDERERS')
