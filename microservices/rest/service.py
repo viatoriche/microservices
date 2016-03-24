@@ -1,10 +1,18 @@
 # coding=utf-8
 from flask.ext.api import FlaskAPI, settings
 from flask.ext.api.renderers import JSONRenderer
+from flask import Blueprint
 from flask.ext.api.parsers import BaseParser
 from flask._compat import text_type
 from flask_api import exceptions
 import xmltodict
+
+api_resources = Blueprint(
+    'microservices/rest', __name__,
+    url_prefix='/microservices/rest',
+    template_folder='templates', static_folder='static'
+)
+
 
 class MicroserviceXMLParser(BaseParser):
     media_type = 'application/xml'
@@ -51,6 +59,7 @@ class Microservice(FlaskAPI):
    def __init__(self, *args, **kwargs):
        super(Microservice, self).__init__(*args, **kwargs)
        self.api_settings = MicroserviceAPISettings(self.config)
+       self.register_blueprint(api_resources)
 
 
 def run(app, port=8080):
