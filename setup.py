@@ -8,7 +8,7 @@ setup(
     version=version,
     url='',
     packages=packages,
-    package_data={'templates': ("templates/*.*")},
+    package_data={'microservices': ["templates/*.*"]},
     license='',
     author='viatoriche',
     author_email='mpanfilov@npoprogress.com',
