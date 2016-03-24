@@ -8,8 +8,8 @@ from flask_api import exceptions
 import xmltodict
 
 api_resources = Blueprint(
-    'microservices/rest', __name__,
-    url_prefix='/microservices/rest',
+    'microservices/http', __name__,
+    url_prefix='/microservices/http',
     template_folder='templates', static_folder='static'
 )
 
