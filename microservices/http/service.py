@@ -5,6 +5,8 @@ from flask import Blueprint
 from flask.ext.api.parsers import BaseParser
 from flask._compat import text_type
 from flask_api import exceptions
+from flask.json import JSONEncoder
+import json
 import xmltodict
 
 api_resources = Blueprint(
@@ -30,6 +32,16 @@ class MicroserviceJSONRenderer(JSONRenderer):
     charset = 'utf8'
     media_type = 'application/json; charset=utf-8'
     handles_empty_responses = True
+
+    def render(self, data, media_type, **options):
+        # Requested indentation may be set in the Accept header.
+        try:
+            indent = max(min(int(media_type.params['indent']), 8), 0)
+        except (KeyError, ValueError, TypeError):
+            indent = None
+        # Indent may be set explicitly, eg when rendered by the browsable API.
+        indent = options.get('indent', indent)
+        return json.dumps(data, cls=JSONEncoder, ensure_ascii=True, indent=indent)
 
 class MicroserviceAPISettings(settings.APISettings):
 
