@@ -1,20 +1,12 @@
 # coding=utf-8
-from flask.ext.api import FlaskAPI
-from flask.ext.api.renderers import JSONRenderer, BrowsableAPIRenderer
+from flask.ext.api import FlaskAPI, settings
+from flask.ext.api.renderers import JSONRenderer
 from flask.ext.api.parsers import BaseParser
 from flask._compat import text_type
 from flask_api import exceptions
 import xmltodict
-from flask.ext.api import status
-from flask import request
-from flask import templating
-from os import environ
-from urlparse import urljoin
-from lxml import etree
 
-app = FlaskAPI(__name__)
-
-class AppXMLParser(BaseParser):
+class MicroserviceXMLParser(BaseParser):
     media_type = 'application/xml'
 
     def parse(self, stream, media_type, **options):
@@ -25,21 +17,41 @@ class AppXMLParser(BaseParser):
             msg = 'XML parse error - %s' % text_type(exc)
             raise exceptions.ParseError(msg)
 
-class AppJSONRenderer(JSONRenderer):
+class MicroserviceJSONRenderer(JSONRenderer):
 
     charset = 'utf8'
     media_type = 'application/json; charset=utf-8'
     handles_empty_responses = True
 
-app.config['DEFAULT_RENDERERS'] = [
-    AppJSONRenderer,
-    'flask.ext.api.renderers.BrowsableAPIRenderer',
-]
+class MicroserviceAPISettings(settings.APISettings):
 
-app.config['DEFAULT_PARSERS'] = [
-    AppXMLParser,
-    'flask.ext.api.parsers.JSONParser',
-]
+    @property
+    def DEFAULT_PARSERS(self):
+        default = [
+            MicroserviceXMLParser,
+            'flask_api.parsers.JSONParser',
+            'flask_api.parsers.URLEncodedParser',
+            'flask_api.parsers.MultiPartParser'
+        ]
+        val = self.user_config.get('DEFAULT_PARSERS', default)
+        return settings.perform_imports(val, 'DEFAULT_PARSERS')
+
+    @property
+    def DEFAULT_RENDERERS(self):
+        default = [
+            MicroserviceJSONRenderer,
+            'flask_api.renderers.BrowsableAPIRenderer'
+        ]
+        val = self.user_config.get('DEFAULT_RENDERERS', default)
+        return settings.perform_imports(val, 'DEFAULT_RENDERERS')
+
+
+class Microservice(FlaskAPI):
+
+   def __init__(self, *args, **kwargs):
+       super(Microservice, self).__init__(*args, **kwargs)
+       self.api_settings = MicroserviceAPISettings(self.config)
+
 
 def run(app, port=8080):
     import logging
