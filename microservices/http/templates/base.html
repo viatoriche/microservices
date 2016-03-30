@@ -34,10 +34,7 @@
         <div class="navbar {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}">
             <div class="navbar-inner">
                 <div class="container-fluid">
-                <span href="/">
-                    {% block branding %}<a class='brand' rel="nofollow" href='http://www.flaskapi.org'>Flask API <span
-                            class="version">{{ version }}</span></a>{% endblock %}
-                </span>
+                    {% block branding %}<h5>Microservice API</h5>{% endblock %}
                     <ul class="nav pull-right">
                         {% block userlinks %}
                             <!--{ if user.is_authenticated }
