@@ -105,7 +105,8 @@ class MicroserviceRenderer(object):
             resources = {}
             for app_resource in [value for value in app.resources.values() if value.in_resources is not None]:
                 resources[app_resource.rule] = {k: app_resource[k] for k in app_resource.in_resources if k in app_resource}
-            response[resources_name] = resources
+            if resources:
+                response[resources_name] = resources
 
         update = resource.get('update', None)
         if update is not None:
