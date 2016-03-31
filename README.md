@@ -10,6 +10,10 @@ For install:
 
 download and run `python setup.py install`
 
+or
+
+`pip install microservices`
+
 Basic usage for http:
 ---------------------
 
