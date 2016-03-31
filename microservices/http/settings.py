@@ -1,7 +1,7 @@
 from flask.ext.api import settings
 
-from http.renderers import MicroserviceJSONRenderer, MicroserviceBrowsableAPIRenderer
-from http.parsers import MicroserviceXMLParser
+from microservices.http.renderers import MicroserviceJSONRenderer, MicroserviceBrowsableAPIRenderer
+from microservices.http.parsers import MicroserviceXMLParser
 
 
 class MicroserviceAPISettings(settings.APISettings):

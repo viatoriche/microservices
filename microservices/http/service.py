@@ -7,8 +7,8 @@ from flask._compat import string_types
 from flask._compat import text_type
 from flask.ext.api import FlaskAPI
 
-from http.responses import MicroserviceResponse
-from http.settings import MicroserviceAPISettings
+from microservices.http.responses import MicroserviceResponse
+from microservices.http.settings import MicroserviceAPISettings
 
 api_resources = Blueprint(
     u'microservices', __name__,
