@@ -29,7 +29,7 @@ setup(
     package_data=get_package_data(package),
     license='',
     author='viatoriche',
-    author_email='mpanfilov@npoprogress.com',
+    author_email='maxim@via-net.org',
     description='',
     install_requires=[x for x in open('requirements.txt').read().split('\n')],
 )
