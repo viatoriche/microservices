@@ -46,6 +46,8 @@ class MicroserviceAPISettings(settings.APISettings):
             resources='resources',
             resource='resource',
             methods='methods',
+            response_update=True,
+            ignore_for_methods=[],
         )
         user_schema = self.user_config.get('SCHEMA', default)
         default.update(user_schema)

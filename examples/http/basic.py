@@ -19,7 +19,7 @@ microservice = Microservice(__name__)
 )
 def hello():
     if request.method == 'POST':
-        return {u'Hello': request.data}
+        return request.data
     return u"POST something for hello"
 
 if __name__ == "__main__":

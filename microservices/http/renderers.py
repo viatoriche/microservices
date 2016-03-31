@@ -22,11 +22,18 @@ class MicroserviceRendererMixin(object):
 
         schema = resource.schema
 
+        ignore_for_methods = schema.get('ignore_for_methods', [])
+
+        if request.method in ignore_for_methods:
+            return data
+
         response = dict()
 
-        response_name = schema.get('response', None)
-        if response_name is not None:
-            response[response_name] = data
+        response_update = schema.get('response_update', True)
+        if not response_update or not isinstance(data, dict):
+            response_name = schema.get('response', None)
+            if response_name is not None:
+                response[response_name] = data
 
         info = resource.get('info', None)
         if info is not None:
@@ -72,6 +79,9 @@ class MicroserviceRendererMixin(object):
         if update is not None:
             if isinstance(update, dict):
                 response.update(update)
+
+        if response_update and isinstance(data, dict):
+            response.update(data)
         return response
 
 
