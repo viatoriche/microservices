@@ -24,12 +24,13 @@ def get_package_data(package):
 setup(
     name=package,
     version=version,
-    url='',
     packages=packages,
     package_data=get_package_data(package),
     license='',
     author='viatoriche',
     author_email='maxim@via-net.org',
-    description='',
+    description='Microservices builder',
+    url='https://github.com/viatoriche/microservices',
+    download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(version),
     install_requires=[x for x in open('requirements.txt').read().split('\n')],
 )
