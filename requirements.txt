@@ -1,3 +1,0 @@
-Flask-API>=0.6.5
-xmltodict>=0.10.1
-addict

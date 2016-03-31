@@ -27,11 +27,11 @@ setup(
     version=version,
     packages=packages,
     package_data=get_package_data(package),
-    license='',
+    license='MIT',
     author='viatoriche',
     author_email='maxim@via-net.org',
     description='Microservices builder',
     url='https://github.com/viatoriche/microservices',
     download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(version),
-    install_requires=[x for x in open('requirements.txt').read().split('\n')],
+    install_requires=['Flask-API>=0.6.5', 'xmltodict>=0.10.1', 'addict'],
 )
