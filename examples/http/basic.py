@@ -6,6 +6,20 @@ from flask import request
 microservice = Microservice(__name__)
 
 @microservice.route(
+    '/second',
+    endpoint='second',
+    methods=['GET'],
+    resource=Resource(
+        info=ResourceInfo(
+            resource='Second resource',
+            GET='Get second resource',
+        )
+    )
+)
+def second():
+    return u'SECOND'
+
+@microservice.route(
     '/',
     endpoint='Hello',
     methods=['GET', 'POST'],
