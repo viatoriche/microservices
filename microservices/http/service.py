@@ -6,6 +6,7 @@ from flask import request
 from flask._compat import string_types
 from flask._compat import text_type
 from flask.ext.api import FlaskAPI
+from microservices.utils import dict_update
 
 from microservices.http.responses import MicroserviceResponse
 from microservices.http.settings import MicroserviceAPISettings
@@ -26,12 +27,12 @@ class Microservice(FlaskAPI):
         self.api_settings = MicroserviceAPISettings(self.config)
         self.register_blueprint(api_resources)
 
-    def add_resource(self, rule, endpoint, methods, options):
-        resource = options.pop('resource', None)
+    def add_resource(self, resource, rule, endpoints=None, methods=None):
         if resource is not None:
+            orig_resource = self.resources.get(rule, Dict())
             resource = Dict(resource)
             resource.rule = rule
-            resource.endpoint = endpoint
+            resource.endpoints = endpoints
             resource.methods = methods
             if 'schema' not in resource:
                 resource.schema = self.api_settings.SCHEMA
@@ -55,19 +56,17 @@ class Microservice(FlaskAPI):
                     in_resources = None
 
                 resource['in_resources'] = in_resources
-            self.resources[rule] = resource
-        return options
+            self.resources[rule] = dict_update(orig_resource, resource)
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
-        methods = options.get('methods', None)
-        if methods is None:
-            methods = ['GET']
-        if endpoint is None:
-            if view_func is not None:
-                endpoint = view_func.__name__
-        if endpoint is not None and view_func is not None:
-            options = self.add_resource(rule, endpoint, methods, options)
-        return super(Microservice, self).add_url_rule(rule, endpoint=endpoint, view_func=view_func, **options)
+        resource = options.pop('resource', None)
+        super(Microservice, self).add_url_rule(rule, endpoint=endpoint, view_func=view_func, **options)
+        rule_infos = [rule_info for rule_info in self.url_map._rules if rule_info.rule == rule]
+        methods = list(set(reduce(lambda i, j: list(i) + list(j), [rule_info.methods for rule_info in rule_infos])))
+        endpoints = reduce(lambda i, j: [i, j], [rule_info.endpoint for rule_info in rule_infos])
+        if not isinstance(endpoints, list):
+            endpoints = [endpoints]
+        self.add_resource(resource, rule, endpoints=endpoints, methods=methods)
 
     def make_response(self, rv):
         """

@@ -8,7 +8,6 @@ microservice = Microservice(__name__)
 @microservice.route(
     '/second',
     endpoint='second',
-    methods=['GET'],
     resource=Resource(
         info=ResourceInfo(
             resource='Second resource',
@@ -18,6 +17,20 @@ microservice = Microservice(__name__)
 )
 def second():
     return u'SECOND'
+
+@microservice.route(
+    '/second',
+    resource=Resource(
+        info=ResourceInfo(
+            POST='POST INFO',
+        ),
+    ),
+    endpoint='second_post',
+    methods=['POST'],
+)
+def second_post():
+    return u'SECOND'
+
 
 @microservice.route(
     '/',
