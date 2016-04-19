@@ -106,7 +106,7 @@ class MicroserviceJSONRenderer(JSONRenderer, MicroserviceRendererMixin):
 
 
 class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendererMixin):
-    max_length = 10000
+    max_length = 1000000
 
     def render(self, data, *args, **options):
         data = self.pre_render(data, *args, **options)
