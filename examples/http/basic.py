@@ -1,18 +1,18 @@
 from microservices.http.service import Microservice
 from microservices.http.runners import base_run as run
 from microservices.http.resources import ResourceInfo, Resource
-from flask import request
+from flask import request, url_for
 
 microservice = Microservice(__name__)
 
 @microservice.route(
     '/second',
-    endpoint='second',
     resource=Resource(
         info=ResourceInfo(
             resource='Second resource',
             GET='Get second resource',
-        )
+        ),
+        url=True,
     )
 )
 def second():
@@ -24,13 +24,39 @@ def second():
         info=ResourceInfo(
             POST='POST INFO',
         ),
+        url=True,
     ),
-    endpoint='second_post',
     methods=['POST'],
 )
 def second_post():
     return u'SECOND'
 
+@microservice.route(
+    '/second/<string:test>/',
+    resource=Resource(
+        info=ResourceInfo(
+            POST='POST INFO',
+        ),
+        url=True,
+        url_params=dict(test='something'),
+    ),
+    methods=['POST', 'GET'],
+)
+def second_params(test):
+    return test
+
+@microservice.route(
+    '/second/<string:test>/<int:two>/',
+    resource=Resource(
+        info=ResourceInfo(
+            POST='POST INFO',
+        ),
+        url=lambda resource: url_for('second', _external=True),
+    ),
+    methods=['POST', 'GET'],
+)
+def second_params_two(test, two):
+    return [test, two]
 
 @microservice.route(
     '/',
@@ -42,6 +68,7 @@ def second_post():
             GET=u'Ask service about hello',
             POST=u'Answer for hello'
         ),
+        url=True,
     ),
 )
 def hello():

@@ -11,6 +11,7 @@ class MicroserviceAPISettings(settings.APISettings):
             'info',
             'methods',
             'schema',
+            'url',
         ]
         return self.user_config.get('IN_RESOURCES', default)
 

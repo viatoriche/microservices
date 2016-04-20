@@ -3,6 +3,8 @@ import json
 from flask import request
 from flask.ext.api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
+from flask import url_for
+from werkzeug.routing import BuildError
 
 
 class MicroserviceRendererMixin(object):
@@ -67,6 +69,23 @@ class MicroserviceRendererMixin(object):
         if methods_name is not None:
             response[methods_name] = resource.methods
 
+        def url_resource(resource):
+            url = resource.url
+            if callable(url):
+                return url(resource)
+            if isinstance(url, basestring):
+                return url
+            params = resource.get('url_params', {})
+            params['_external'] = params.get('_external', True)
+            try:
+                url = url_for(
+                    resource.endpoints[0],
+                    **params
+                )
+            except BuildError:
+                url = None
+            return url
+
         resources_name = schema.get('resources', None)
         if resources_name is not None:
             resources = {}
@@ -74,7 +93,17 @@ class MicroserviceRendererMixin(object):
                     value for value in app.resources.values()
                     if value.in_resources is not None and value.rule != resource.rule
                 ]:
-                resources[app_resource.rule] = {k: app_resource[k] for k in app_resource.in_resources if k in app_resource}
+                if 'url' in app_resource:
+                    if app_resource.url:
+                        url = url_resource(app_resource)
+                        if url is not None:
+                            app_resource.url = url
+                        else:
+                            del app_resource.url
+                resources[app_resource.rule] = {
+                    k: app_resource[k]
+                    for k in app_resource.in_resources if k in app_resource
+                }
             if resources:
                 response[resources_name] = resources
 
