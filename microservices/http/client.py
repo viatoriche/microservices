@@ -5,7 +5,7 @@ import requests
 
 
 class _client_request(object):
-    def __init__(self, client, resource, method):
+    def __init__(self, client, resource='/', method='get'):
         self.client = client
         self.resource = resource
         self.method = method
@@ -20,7 +20,7 @@ class _requests_method(object):
         self.method = method
         self.client = client
 
-    def __call__(self, resource, response_key=None, query=None, data=None, timeout=60, **kwargs):
+    def __call__(self, resource='/', response_key=None, query=None, data=None, timeout=60, **kwargs):
         if data is not None:
             kwargs['json'] = data
         payload = requests.request(self.method, self.client.url_for(resource, query), timeout=timeout, **kwargs).json()
@@ -28,7 +28,7 @@ class _requests_method(object):
 
 
 class Resource(object):
-    def __init__(self, client, resource):
+    def __init__(self, client, resource='/'):
         self.client = client
         self.resource = resource
 
@@ -43,7 +43,7 @@ class Client(object):
         self.endpoint = endpoint
         self.status_code = status_code
 
-    def url_for(self, resource, query=None):
+    def url_for(self, resource='/', query=None):
         parsed_url = list(urlparse.urlparse(self.endpoint))
         parsed_url[2] = resource
         if query is not None:
@@ -62,5 +62,5 @@ class Client(object):
     def __getattr__(self, item):
         return _requests_method(self, item)
 
-    def resource(self, resource):
+    def resource(self, resource='/'):
         return Resource(client=self, resource=resource)
