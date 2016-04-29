@@ -3,8 +3,8 @@ import urlparse
 
 import requests
 
-class ResponseError(Exception):
 
+class ResponseError(Exception):
     def __init__(self, response, description, *args, **kwargs):
         self.response = response
         self.description = description
@@ -23,22 +23,39 @@ class ResponseError(Exception):
 
 
 class _client_request(object):
-    def __init__(self, client, resource='/', method='get'):
+    def __init__(self, client, resources, method='get'):
         self.client = client
-        self.resource = resource
+        self.resources = resources
         self.method = method
 
     def __call__(self, *args, **kwargs):
         method = getattr(self.client, self.method)
-        return method(resource=self.resource, *args, **kwargs)
+        args = self.resources + args
+        return method(*args, **kwargs)
 
 
 class _requests_method(object):
     def __init__(self, client, method):
         self.method = method
         self.client = client
+        self.close_slash = client.close_slash
 
-    def __call__(self, resource='/', response_key=None, query=None, data=None, timeout=60, **kwargs):
+    def build_resource(self, resources):
+        resource = '/'.join(resources)
+        if self.close_slash:
+            if not resource.endswith('/'):
+                resource += '/'
+        return resource
+
+    def __call__(self, *resources, **kwargs):
+        response_key = kwargs.pop('response_key', None)
+        key = kwargs.pop('key', None)
+        if key is not None:
+            response_key = key
+        query = kwargs.pop('query', None)
+        data = kwargs.pop('data', None)
+        timeout = kwargs.pop('timeout', 60)
+        resource = self.build_resource(resources)
         if data is not None:
             kwargs['json'] = data
         response = requests.request(self.method, self.client.url_for(resource, query), timeout=timeout, **kwargs)
@@ -46,19 +63,19 @@ class _requests_method(object):
 
 
 class Resource(object):
-    def __init__(self, client, resource='/'):
+    def __init__(self, client, resources):
         self.client = client
-        self.resource = resource
+        self.resources = resources
 
     def __getattr__(self, item):
-        return _client_request(self.client, self.resource, item)
+        return _client_request(self.client, self.resources, item)
 
 
 class Client(object):
-    ok_statuses = (200, 202, )
+    ok_statuses = (200, 202,)
     to_none_statuses = (404,)
 
-    def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True):
+    def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True):
         if endpoint.endswith('/'):
             endpoint = endpoint[:-1]
         if ok_statuses is not None:
@@ -66,6 +83,7 @@ class Client(object):
         if to_none_statuses is not None:
             self.to_none_statuses = to_none_statuses
         self.empty_to_none = empty_to_none
+        self.close_slash = close_slash
         self.endpoint = endpoint
 
     def url_for(self, resource='/', query=None):
@@ -75,7 +93,6 @@ class Client(object):
             parsed_url[4] = urllib.urlencode(query, doseq=1)
         return urlparse.urlunparse(parsed_url)
 
-    # result None if error
     def handle_response(self, response, response_key=None):
         status_code = response.status_code
         try:
@@ -99,5 +116,5 @@ class Client(object):
     def __getattr__(self, item):
         return _requests_method(self, item)
 
-    def resource(self, resource='/'):
-        return Resource(client=self, resource=resource)
+    def resource(self, *resources):
+        return Resource(self, resources)
