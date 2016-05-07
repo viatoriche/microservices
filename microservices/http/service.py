@@ -34,28 +34,15 @@ class Microservice(FlaskAPI):
             resource.rule = rule
             resource.endpoints = endpoints
             resource.methods = methods
-            if 'schema' not in resource:
-                resource.schema = self.api_settings.SCHEMA
-            else:
-                resource_schema = resource.get('schema', None)
-                if resource_schema is not None:
-                    schema = self.api_settings.SCHEMA
-                    schema.update(resource_schema)
-                else:
-                    schema = self.api_settings.SCHEMA
 
-                resource['schema'] = schema
-            if 'in_resources' not in resource:
-                resource.in_resources = self.api_settings.IN_RESOURCES
-            else:
-                resource_in_resources = resource.get('in_resources', None)
-                if resource_in_resources is not None:
-                    in_resources = self.api_settings.IN_RESOURCES
-                    in_resources.update(resource_in_resources)
-                else:
-                    in_resources = None
-
-                resource['in_resources'] = in_resources
+            schema = self.api_settings.SCHEMA
+            if resource.get('schema') is not None:
+                schema.update(resource.schema)
+            resource.schema = schema
+            in_resources = self.api_settings.IN_RESOURCES
+            if resource.get('in_resources') is not None:
+                in_resources.update(resource.in_resources)
+            resource.in_resources = in_resources
             self.resources[rule] = dict_update(orig_resource, resource)
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):

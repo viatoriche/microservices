@@ -1,5 +1,5 @@
 import collections
-
+import six
 
 def get_template_source(jinja_env, template_name):
     return jinja_env.loader.get_source(jinja_env, template_name)[0]
@@ -34,7 +34,7 @@ def dict_update(d, u):
     :param u: updates for d
     :return: new dict
     """
-    for k, v in u.iteritems():
+    for k, v in six.iteritems(u):
         if isinstance(v, collections.Mapping):
             r = dict_update(d.get(k, {}), v)
             d[k] = r
