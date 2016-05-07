@@ -7,6 +7,7 @@ package = 'microservices'
 version = __import__(package).get_version()
 packages = find_packages()
 
+
 def get_package_data(package):
     """
     Return all files under the root package, that are not in a
@@ -33,5 +34,5 @@ setup(
     description='Microservices builder',
     url='https://github.com/viatoriche/microservices',
     download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(version),
-    install_requires=['Flask-API>=0.6.5', 'xmltodict>=0.10.1', 'addict', 'requests'],
+    install_requires=['Flask-API>=0.6.5', 'xmltodict>=0.10.1', 'addict', 'requests', 'six'],
 )
