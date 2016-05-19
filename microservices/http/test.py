@@ -138,3 +138,7 @@ class TestClient(unittest.TestCase):
 
         patch_requests(MockRequest(handler=test_request, _content='bad', status_code=200))
         self.assertRaises(ResponseError, client.get, key='response')
+
+        patch_requests(MockRequest(handler=test_request, _content='["tested"]', status_code=200))
+        response = client.get()
+        self.assertEqual(response, ['tested'])
