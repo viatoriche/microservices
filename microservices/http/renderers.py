@@ -89,20 +89,20 @@ class MicroserviceRendererMixin(object):
         resources_name = schema.get('resources', None)
         if resources_name is not None:
             resources = {}
-            for app_resource in [
+            for resource in [
                     value for value in app.resources.values()
                     if value.in_resources is not None and value.rule != resource.rule
                 ]:
-                if 'url' in app_resource:
-                    if app_resource.url:
-                        url = url_resource(app_resource)
+                if 'url' in resource:
+                    if resource.url:
+                        url = url_resource(resource)
                         if url is not None:
-                            app_resource.url = url
+                            resource.url = url
                         else:
-                            del app_resource.url
-                resources[app_resource.rule] = {
-                    k: app_resource[k]
-                    for k in app_resource.in_resources if k in app_resource
+                            del resource.url
+                resources[resource.rule] = {
+                    k: resource[k]
+                    for k in resource.in_resources if k in resource
                 }
             if resources:
                 response[resources_name] = resources

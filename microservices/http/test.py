@@ -1,5 +1,7 @@
 import unittest
 import json
+from microservices.utils import set_logging
+set_logging()
 
 class TestHTTP(unittest.TestCase):
     def setUp(self):
@@ -54,6 +56,21 @@ class TestService(TestHTTP):
             if request.method == 'GET':
                 return {'test': 'tested'}
 
+        @microservice.route(
+            '/test',
+            resource=dict(
+                info=dict(
+                    resource='INFO'
+                ),
+                url=True,
+            ),
+        )
+        def test():
+            from flask import request
+
+            if request.method == 'GET':
+                return ['tested']
+
         resp = app.get('/')
         data = resp.data
 
@@ -64,14 +81,12 @@ class TestService(TestHTTP):
         self.assertEqual(data['status'], '200 OK')
         self.assertEqual(data['info']['resource'], 'INFO')
         self.assertEqual(data['status_code'], 200)
+        self.assertEqual(data['resources']['/test']['url'], 'http://localhost/test')
 
 class TestClient(unittest.TestCase):
 
     def test_client(self):
         from microservices.http.client import Client, ResponseError
-        from microservices.utils import set_logging
-
-        set_logging()
 
         valid_method = 'get'
         valid_url = 'http://user:password@endpoint:8000/test/1/'
