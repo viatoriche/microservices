@@ -39,16 +39,29 @@ class MicroserviceAPISettings(settings.APISettings):
     def SCHEMA(self):
         default = dict(
             response='response',
-            info='info',
-            status='status',
-            request='request',
-            status_code='status_code',
-            headers='headers',
-            resources='resources',
-            resource='resource',
-            methods='methods',
+            info=None,
+            status=None,
+            request=None,
+            status_code=None,
+            headers=None,
+            resources=None,
+            resource=None,
+            methods=None,
             response_update=True,
             ignore_for_methods=[],
+            browser=dict(
+                response='response',
+                info='info',
+                status='status',
+                request='request',
+                status_code='status_code',
+                headers='headers',
+                resources='resources',
+                resource='resource',
+                methods='methods',
+                response_update=True,
+                ignore_for_methods=[],
+            ),
         )
         user_schema = self.user_config.get('SCHEMA', default)
         default.update(user_schema)

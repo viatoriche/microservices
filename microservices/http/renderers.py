@@ -8,7 +8,7 @@ from werkzeug.routing import BuildError
 
 
 class MicroserviceRendererMixin(object):
-    def pre_render(self, data, media_type, **options):
+    def pre_render(self, data, media_type, browser=False, **options):
 
         rule = request.url_rule.rule
 
@@ -23,6 +23,8 @@ class MicroserviceRendererMixin(object):
             return data
 
         schema = resource.schema
+        if browser:
+            schema = schema['browser']
 
         ignore_for_methods = schema.get('ignore_for_methods', [])
 
@@ -138,6 +140,6 @@ class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendere
     max_length = 1000000
 
     def render(self, data, *args, **options):
-        data = self.pre_render(data, *args, **options)
+        data = self.pre_render(data, browser=True, *args, **options)
         result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
         return result[:self.max_length]
