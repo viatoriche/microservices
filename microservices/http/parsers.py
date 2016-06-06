@@ -1,7 +1,7 @@
 import xmltodict
 from flask._compat import text_type
-from flask.ext.api import exceptions
-from flask.ext.api.parsers import BaseParser
+from flask_api import exceptions
+from flask_api.parsers import BaseParser
 
 
 class MicroserviceXMLParser(BaseParser):

@@ -1,7 +1,7 @@
 import json
 
 from flask import request
-from flask.ext.api.renderers import JSONRenderer, BrowsableAPIRenderer
+from flask_api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
 from flask import url_for
 from werkzeug.routing import BuildError
