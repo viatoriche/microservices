@@ -19,6 +19,11 @@ def gevent_run(app, port=5000, log=None, error_log=None, address='', **kwargs):
         base_run(app, port, **kwargs)
 
 
+def tornado_start():
+    from tornado.ioloop import IOLoop
+    IOLoop.instance().start()
+
+
 def tornado_run(app, port=5000, address="", use_gevent=False, start=True, Container=None, Server=None):
     if Container is None:
         from tornado.wsgi import WSGIContainer
@@ -47,5 +52,14 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, Contai
     http_server = Server(CustomWSGIContainer(app))
     http_server.listen(port, address)
     if start:
-        from tornado.ioloop import IOLoop
-        IOLoop.instance().start()
+        tornado_start()
+
+
+def tornado_combiner(configs, use_gevent=False, start=True, Container=None, Server=None):
+    for config in configs:
+        app = config['app']
+        port = config.get('port', 5000)
+        address = config.get('address', '')
+        tornado_run(app, use_gevent=use_gevent, port=port, address=address, start=False, Container=Container, Server=Server)
+    if start:
+        tornado_start()

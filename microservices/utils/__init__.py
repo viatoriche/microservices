@@ -41,3 +41,6 @@ def dict_update(d, u):
         else:
             d[k] = u[k]
     return d
+
+def is_iterable(obj):
+    return isinstance(obj, collections.Iterable)
