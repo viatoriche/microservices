@@ -97,14 +97,15 @@ microservice = Microservice(__name__)
     )
 )
 def second():
+    """Second resource
+
+    * GET: return "SECOND"
+    """
     return u'SECOND'
 
 @microservice.route(
     '/second/',
     resource=Resource(
-        info=ResourceInfo(
-            POST='POST INFO',
-        ),
         url=True,
     ),
     methods=['POST'],
@@ -115,15 +116,17 @@ def second_post():
 @microservice.route(
     '/second/<string:test>/',
     resource=Resource(
-        info=ResourceInfo(
-            POST='POST INFO',
-        ),
         url=True,
         url_params=dict(test='something'),
     ),
     methods=['POST', 'GET'],
 )
 def second_params(test):
+    """Second resource
+
+    * POST: return request data
+    * GET: return test param
+    """
     if request.method == 'POST':
         return request.data
     return test
@@ -131,32 +134,35 @@ def second_params(test):
 @microservice.route(
     '/second/<string:test>/<int:two>/',
     resource=Resource(
-        info=ResourceInfo(
-            POST='POST INFO',
-        ),
         url=lambda resource: url_for('second', _external=True),
     ),
     methods=['POST', 'GET'],
 )
 def second_params_two(test, two):
+    """Second resource
+
+    * POST: return [test, two, request data]
+    * GET: return [test, two]
+    """
     if request.method == 'POST':
         return [test, two, request.data]
     return [test, two]
 
 @microservice.route(
     '/',
-    endpoint='Hello',
+    endpoint='Hello world!',
     methods=['GET', 'POST'],
     resource=Resource(
-        info=ResourceInfo(
-            resource=u'Hello world!',
-            GET=u'Ask service about hello',
-            POST=u'Answer for hello'
-        ),
         url=True,
     ),
 )
 def hello():
+    """
+    Hello world resource, testing main page
+
+    * GET: return POST something for hello
+    * POST: return request data
+    """
     if request.method == 'POST':
         return request.data
     return u"POST something for hello"
@@ -164,6 +170,7 @@ def hello():
 if __name__ == "__main__":
     set_logging()
     run(microservice, debug=True)
+
 ```
 
 Now you can run the microservice:

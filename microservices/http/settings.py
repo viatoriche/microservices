@@ -8,7 +8,6 @@ class MicroserviceAPISettings(settings.APISettings):
     @property
     def IN_RESOURCES(self):
         default = [
-            'info',
             'methods',
             'schema',
             'url',
@@ -39,7 +38,6 @@ class MicroserviceAPISettings(settings.APISettings):
     def SCHEMA(self):
         default = dict(
             response='response',
-            info=None,
             status=None,
             request=None,
             status_code=None,
@@ -51,7 +49,6 @@ class MicroserviceAPISettings(settings.APISettings):
             ignore_for_methods=[],
             browser=dict(
                 response='response',
-                info='info',
                 status='status',
                 request='request',
                 status_code='status_code',

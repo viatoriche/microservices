@@ -34,5 +34,5 @@ setup(
     description='Microservices builder',
     url='https://github.com/viatoriche/microservices',
     download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(version),
-    install_requires=['Flask-API>=0.6.5', 'xmltodict>=0.10.1', 'addict', 'requests', 'six'],
+    install_requires=['Flask-API>=0.6.6', 'xmltodict>=0.10.1', 'addict', 'requests', 'six', 'Markdown'],
 )

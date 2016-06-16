@@ -1,4 +1,6 @@
 from addict import Dict
+import warnings
+warnings.simplefilter('default')
 
 
 class Resource(dict):
@@ -8,6 +10,7 @@ class Resource(dict):
 
 class ResourceInfo(dict):
     def __init__(self, resource=None, update=None, **kwargs):
+        warnings.warn('ResourceInfo will be remove in future release', DeprecationWarning)
         super(ResourceInfo, self).__init__()
         self.data = Dict()
         if resource is not None:
