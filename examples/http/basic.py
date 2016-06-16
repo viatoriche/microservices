@@ -1,12 +1,13 @@
 from microservices.http.service import Microservice
 from microservices.http.runners import base_run as run
 from microservices.http.resources import ResourceInfo, Resource
+from microservices.utils import set_logging
 from flask import request, url_for
 
 microservice = Microservice(__name__)
 
 @microservice.route(
-    '/second',
+    '/second/',
     resource=Resource(
         info=ResourceInfo(
             resource='Second resource',
@@ -19,7 +20,7 @@ def second():
     return u'SECOND'
 
 @microservice.route(
-    '/second',
+    '/second/',
     resource=Resource(
         info=ResourceInfo(
             POST='POST INFO',
@@ -29,7 +30,7 @@ def second():
     methods=['POST'],
 )
 def second_post():
-    return u'SECOND'
+    return request.data
 
 @microservice.route(
     '/second/<string:test>/',
@@ -43,6 +44,8 @@ def second_post():
     methods=['POST', 'GET'],
 )
 def second_params(test):
+    if request.method == 'POST':
+        return request.data
     return test
 
 @microservice.route(
@@ -56,6 +59,8 @@ def second_params(test):
     methods=['POST', 'GET'],
 )
 def second_params_two(test, two):
+    if request.method == 'POST':
+        return [test, two, request.data]
     return [test, two]
 
 @microservice.route(
@@ -77,4 +82,5 @@ def hello():
     return u"POST something for hello"
 
 if __name__ == "__main__":
-    run(microservice)
+    set_logging()
+    run(microservice, debug=True)
