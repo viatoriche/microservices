@@ -1,26 +1,26 @@
-**Status**: Microservices is under active development.
+**Status**: lib is under active development.
 
 # [Microservices](https://pypi.python.org/pypi/microservices/)
 
-Package for building are microservices and clients.
+Build microservices and client easily.
 
-HTTP service bases on [Browsable Web APIs for Flask](http://www.flaskapi.org)
+HTTP service based on [Browsable Web APIs for Flask](http://www.flaskapi.org)
 
-HTTP client bases on [requests](http://docs.python-requests.org/en/master/)
+HTTP client based on [requests](http://docs.python-requests.org/en/master/)
 
 ---
 
 ## Overview
 
-[Microservices](https://pypi.python.org/pypi/microservices/) is a package with helpers for building are microservices.
+[Microservices](https://pypi.python.org/pypi/microservices/) library provides you with helpers to create microservices and client apps.
 
-It is currently a work in progress, but the fundamentals are in place and you can already start building your microservices with it. If you want to start using Microservices right now go ahead and do so, but be sure to follow the release notes of new versions carefully.
+It is currently a work in progress, but the fundamental functionality is already in place, so you can already start building your services with it. If you want to start using Microservices right now, go ahead and do so, but be sure to follow the release notes of new versions carefully.
 
 ![Screenshot](docs/screenshot.png)
 
 ## Roadmap
 
-Future work on getting Microservices to a 1.0 release will include:
+Coming additions in version 1.0:
 
 * SQS, AMQP and other transport protocols for microservices API.
 * Full documentation
@@ -55,9 +55,9 @@ Return any valid response object as normal, or return a `list` or `dict`.
 
 A renderer for the response data will be selected using content negotiation
 based on the client 'Accept' header.
-If you're making the API request from a regular client,
+If you're making API request from a regular client,
 this will default to a JSON response.
-If you're viewing the API in a browser it'll default to the browsable
+If you're viewing API via browser, it'll default to the browsable
 API HTML.
 
 ## Requests
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     run(microservice, debug=True)
 ```
 
-Now run the microservice:
+Now you can run the microservice:
 
     $ python ./example.py
      * Running on http://127.0.0.1:5000/
