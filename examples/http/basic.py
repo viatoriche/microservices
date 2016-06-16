@@ -9,10 +9,6 @@ microservice = Microservice(__name__)
 @microservice.route(
     '/second/',
     resource=Resource(
-        info=ResourceInfo(
-            resource='Second resource',
-            GET='Get second resource',
-        ),
         url=True,
     )
 )
