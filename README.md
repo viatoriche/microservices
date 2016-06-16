@@ -26,10 +26,6 @@ Future work on getting Microservices to a 1.0 release will include:
 * Full documentation
 * Classes for building services with microservices context.
 
-It is also possible that the core of Flask API could be refactored into an
-external dependency, in order to make browsable APIs easily available to
-any Python web framework.
-
 ## Installation
 
 Requirements:
