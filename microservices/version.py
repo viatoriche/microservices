@@ -1,6 +1,6 @@
 MAJOR = 0
 MINOR = 15
-PATCH = 1
+PATCH = 2
 
 def get_version(suffix=''):
     return '.'.join([str(v) for v in (MAJOR, MINOR, PATCH)]) + suffix
