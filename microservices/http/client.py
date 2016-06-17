@@ -8,6 +8,14 @@ from microservices.utils import get_logger
 
 class ResponseError(Exception):
     def __init__(self, response, description, *args, **kwargs):
+        """Exception
+
+        exception instance has:
+            response, description, content and status_code
+
+        :param response: requests.response
+        :param description: str - description for error
+        """
         self.response = response
         self.description = description
         self.status_code = response.status_code
@@ -26,6 +34,12 @@ class ResponseError(Exception):
 
 class _client_request(object):
     def __init__(self, client, resources, method='get'):
+        """Request class
+
+        :param client: instance of Client
+        :param resources: list of resource uri ['one', 'two', 'three'] -> /one/two/three/
+        :param method: str for method name, get, post, delete, patch, put etc
+        """
         self.client = client
         self.resources = resources
         self.method = method
@@ -39,12 +53,22 @@ class _client_request(object):
 
 class _requests_method(object):
     def __init__(self, client, method):
+        """method
+
+        :param client: instance of Client
+        :param method: str, post, get etc...
+        """
         self.method = method
         self.client = client
         self.close_slash = client.close_slash
         self.logger = client.logger
 
     def build_resource(self, resources):
+        """Build uri from list
+
+        :param resources: ['one', 'two', 'three']
+        :return: one/two/three
+        """
         resource = '/'.join(resources)
         self.logger.debug('Resource {} builded from {}'.format(resource, resources))
         return resource
@@ -68,6 +92,11 @@ class _requests_method(object):
 
 class Resource(object):
     def __init__(self, client, resources):
+        """Resource
+
+        :param client: instance of Client
+        :param resources: list of url things ['one', 'two', 'three']
+        """
         self.client = client
         self.resources = resources
         self.logger = client.logger
@@ -76,6 +105,11 @@ class Resource(object):
         return _client_request(self.client, self.resources, item)
 
     def resource(self, *resources):
+        """Resource builder with resources url
+
+        :param resources: 'one', 'two', 'three'
+        :return: instance of Resource
+        """
         resources = tuple(self.resources) + resources
         return Resource(self.client, resources)
 
@@ -86,6 +120,15 @@ class Client(object):
 
     def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True,
                  logger=None):
+        """Create a client
+
+        :param endpoint: str, ex. http://localhost:5000 or http://localhost:5000/api/
+        :param ok_statuses: default - (200, 202, ), status codes for "ok"
+        :param to_none_statuses: statuses, for generate None as response, default - (404, )
+        :param empty_to_none: boolean, default - True, if True - empty response will be generate None response (empty str, empty list, empty dict)
+        :param close_slash: boolean, url += '/', if url.endswith != '/', default - True
+        :param logger: logger instance
+        """
         if logger is None:
             logger = get_logger(__name__)
 
@@ -110,6 +153,18 @@ class Client(object):
         return urlparse.urlunparse(url_list)
 
     def url_for(self, resource='', query=None):
+        """Generate url for resource
+
+        Use endpoint for generation
+
+        Ex. resource = 'one/two/three'
+            result - http://localhost:5000/api/one/two/three/
+            if endpoint == http://localhost:5000/api/
+
+        :param resource: str
+        :param query: dict for generate query string {a: 1, b: 2} -> ?a=1&b=2
+        :return: str, url
+        """
         parsed_url = list(urlparse.urlparse(self.endpoint))
         path = self.path + '/' + resource
         if self.close_slash:
@@ -123,10 +178,17 @@ class Client(object):
         return url
 
     def handle_response(self, response, response_key=None):
+        """Handler for response object
+
+        :param response: requests.response obj
+        :param response_key: key for dict in response obj
+        :return object, result for response, python obj
+        """
         status_code = response.status_code
         try:
             result = response.json()
         except Exception as e:
+            self.logger.exception(str(e))
             raise ResponseError(response, str(e))
 
         if result:
@@ -138,7 +200,8 @@ class Client(object):
             elif response_key is not None and status_code in self.to_none_statuses:
                 result = None
             elif status_code not in self.ok_statuses and status_code not in self.to_none_statuses:
-                raise ResponseError(response, 'Status code {} not in ok_statuses {}'.format(status_code, self.ok_statuses))
+                raise ResponseError(response,
+                                    'Status code {} not in ok_statuses {}'.format(status_code, self.ok_statuses))
         if response_key is not None and self.empty_to_none and result is not None and not result:
             result = None
 
@@ -148,4 +211,9 @@ class Client(object):
         return _requests_method(self, item)
 
     def resource(self, *resources):
+        """Generate Resource object with resources
+
+        :param resources: 'one', 'two', 'three'
+        :return: Resource with /one/two/three endpoint
+        """
         return Resource(self, resources)
