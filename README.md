@@ -14,6 +14,8 @@ HTTP client based on [requests](http://docs.python-requests.org/en/master/)
 
 [Microservices](https://pypi.python.org/pypi/microservices/) library provides you with helpers to create microservices and client apps.
 
+See full documentation [here](http://microservices.readthedocs.io/)
+
 It is currently a work in progress, but the fundamental functionality is already in place, so you can already start building your services with it. If you want to start using Microservices right now, go ahead and do so, but be sure to follow the release notes of new versions carefully.
 
 ![Screenshot](docs/screenshot.png)
