@@ -1,4 +1,3 @@
-from addict import Dict
 import warnings
 
 warnings.simplefilter('default')
@@ -90,21 +89,3 @@ class ResourceMarker(dict):
             update=update,
         )
 
-
-class Resource(ResourceMarker):
-    def __init__(self, **kwargs):
-        super(Resource, self).__init__(**kwargs)
-        warnings.warn('class Resource will be remove in future release (1.0), use ResourceMarker', DeprecationWarning)
-
-
-class ResourceInfo(dict):
-    def __init__(self, resource=None, update=None, **kwargs):
-        warnings.warn('ResourceInfo will be remove in future release (1.0)', DeprecationWarning)
-        super(ResourceInfo, self).__init__()
-        self.data = Dict()
-        if resource is not None:
-            self['resource'] = resource
-        if kwargs:
-            self['methods'] = kwargs
-        if update is not None:
-            self.update(update)
