@@ -1,11 +1,12 @@
 import json
 
+
 from flask import request
 from flask_api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
 from flask import url_for
 from werkzeug.routing import BuildError
-
+import six
 
 class MicroserviceRendererMixin(object):
     def pre_render(self, data, media_type, browser=False, **options):
@@ -73,9 +74,13 @@ class MicroserviceRendererMixin(object):
 
         def url_resource(resource):
             url = resource.url
+            if url is None:
+                return url
+            if not url:
+                return None
             if callable(url):
                 return url(resource)
-            if isinstance(url, basestring):
+            if isinstance(url, six.string_types):
                 return url
             params = resource.get('url_params', {})
             params['_external'] = params.get('_external', True)

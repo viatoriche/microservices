@@ -78,9 +78,10 @@ The following example demonstrates a simple API for creating,
 listing, updating and deleting notes.
 
 ```
+
 from microservices.http.service import Microservice
 from microservices.http.runners import base_run as run
-from microservices.http.resources import ResourceInfo, Resource
+from microservices.http.resources import ResourceMarker
 from microservices.utils import set_logging
 from flask import request, url_for
 
@@ -88,13 +89,7 @@ microservice = Microservice(__name__)
 
 @microservice.route(
     '/second/',
-    resource=Resource(
-        info=ResourceInfo(
-            resource='Second resource',
-            GET='Get second resource',
-        ),
-        url=True,
-    )
+    resource=ResourceMarker()
 )
 def second():
     """Second resource
@@ -105,9 +100,7 @@ def second():
 
 @microservice.route(
     '/second/',
-    resource=Resource(
-        url=True,
-    ),
+    resource=ResourceMarker(),
     methods=['POST'],
 )
 def second_post():
@@ -115,8 +108,7 @@ def second_post():
 
 @microservice.route(
     '/second/<string:test>/',
-    resource=Resource(
-        url=True,
+    resource=ResourceMarker(
         url_params=dict(test='something'),
     ),
     methods=['POST', 'GET'],
@@ -133,7 +125,7 @@ def second_params(test):
 
 @microservice.route(
     '/second/<string:test>/<int:two>/',
-    resource=Resource(
+    resource=ResourceMarker(
         url=lambda resource: url_for('second', _external=True),
     ),
     methods=['POST', 'GET'],
@@ -152,9 +144,7 @@ def second_params_two(test, two):
     '/',
     endpoint='Hello world!',
     methods=['GET', 'POST'],
-    resource=Resource(
-        url=True,
-    ),
+    resource=ResourceMarker(),
 )
 def hello():
     """
