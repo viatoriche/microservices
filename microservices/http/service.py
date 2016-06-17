@@ -11,21 +11,24 @@ from microservices.utils import dict_update
 from microservices.http.responses import MicroserviceResponse
 from microservices.http.settings import MicroserviceAPISettings
 
-api_resources = Blueprint(
-    u'microservices', __name__,
-    url_prefix=u'/api',
-    template_folder='templates', static_folder='static'
-)
+from flask_api import app
 
 
 class Microservice(FlaskAPI):
     response_class = MicroserviceResponse
 
     def __init__(self, *args, **kwargs):
+        api_resources = kwargs.pop('api_resources', None)
+        if api_resources is None:
+            api_resources = Blueprint(
+                u'microservices', __name__,
+                url_prefix=u'/api',
+                template_folder='templates', static_folder='static'
+            )
+        app.api_resources = api_resources
         self.resources = Dict()
         super(Microservice, self).__init__(*args, **kwargs)
         self.api_settings = MicroserviceAPISettings(self.config)
-        self.register_blueprint(api_resources)
 
     def add_resource(self, resource, rule, endpoints=None, methods=None):
         if resource is not None:

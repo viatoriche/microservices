@@ -2,6 +2,7 @@ from flask_api import settings
 
 from microservices.http.renderers import MicroserviceJSONRenderer, MicroserviceBrowsableAPIRenderer
 from microservices.http.parsers import MicroserviceXMLParser
+from microservices.http.resources import ResourceSchema
 
 
 class MicroserviceAPISettings(settings.APISettings):
@@ -36,30 +37,7 @@ class MicroserviceAPISettings(settings.APISettings):
 
     @property
     def SCHEMA(self):
-        default = dict(
-            response='response',
-            status=None,
-            request=None,
-            status_code=None,
-            headers=None,
-            resources=None,
-            resource=None,
-            methods=None,
-            response_update=True,
-            ignore_for_methods=[],
-            browser=dict(
-                response='response',
-                status='status',
-                request='request',
-                status_code='status_code',
-                headers='headers',
-                resources='resources',
-                resource='resource',
-                methods='methods',
-                response_update=True,
-                ignore_for_methods=[],
-            ),
-        )
+        default = ResourceSchema()
         user_schema = self.user_config.get('SCHEMA', default)
         default.update(user_schema)
         return default

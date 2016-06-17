@@ -44,9 +44,6 @@ class TestService(TestHTTP):
         @microservice.route(
             '/',
             resource=dict(
-                info=dict(
-                    resource='INFO'
-                ),
                 url=True,
             ),
         )
@@ -59,9 +56,6 @@ class TestService(TestHTTP):
         @microservice.route(
             '/test',
             resource=dict(
-                info=dict(
-                    resource='INFO'
-                ),
                 url=True,
             ),
         )
@@ -77,11 +71,6 @@ class TestService(TestHTTP):
         data = json.loads(data)
 
         self.assertEqual(data['test'], 'tested')
-        # self.assertEqual(data['methods'], ['HEAD', 'OPTIONS', 'GET'])
-        # self.assertEqual(data['status'], '200 OK')
-        # self.assertEqual(data['info']['resource'], 'INFO')
-        # self.assertEqual(data['status_code'], 200)
-        # self.assertEqual(data['resources']['/test']['url'], 'http://localhost/test')
 
 class TestClient(unittest.TestCase):
 
