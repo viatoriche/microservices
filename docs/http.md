@@ -213,3 +213,26 @@ In real client you will see:
 
 ## Settings
 
+If you want use your custom ResourceSchema everywhere, you can change default
+settings.
+
+It is easy:
+
+```
+app.config['SCHEMA'] = ResourceSchema(
+    response='result',
+    response_update=False,
+    status_code='status',
+    browser=BrowserResourceSchema(
+        status=None,
+    )
+)
+```
+
+```
+resource=ResourceMarker(
+    update={
+        'resource_created': datetime.datetime.now().isoformat()
+    }
+)
+```
