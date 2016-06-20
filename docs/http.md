@@ -70,6 +70,7 @@ After reload page you will see
 ![http_2](http/2.png)
 
 You can see additional information
+
 * status
 * resource
 * methods
