@@ -109,4 +109,73 @@ Note:
 
 ## ResourceSchema
 
+Ok, let's do more customizations! And use ResourceSchema
+
+Importing `ResourceSchema` from `microservices.http.resources`
+```
+from microservices.http.resources import ResourceMarker, ResourceSchema
+```
+
+And change something, ex. response name
+```
+    schema=ResourceSchema(
+        response='result',
+    )
+```
+
+Let's see
+```
+resource=ResourceMarker(
+    update={
+        'resource_created': datetime.datetime.now().isoformat()
+    },
+    schema=ResourceSchema(
+        response='result',
+    )
+)
+```
+
+![http_4](http/4.png)
+
+Was `"respone": "Hello world"` and now `"result": "Hello world"`
+
+Want a more? OK!
+
+If your response is a dict, by default response will be updated from your response
+
+```
+def hello_world():
+    return {'hello': 'Hello world'}
+```
+
+![http_5](http/5.png)
+
+If you want reponse all data in your response key name, you can change a policy:
+
+```
+resource=ResourceMarker(
+    update={
+        'resource_created': datetime.datetime.now().isoformat()
+    },
+    schema=ResourceSchema(
+        response='result',
+        response_update=False,
+    )
+),
+```
+
+And you will see:
+```
+"result": {
+    "hello": "Hello world"
+},
+```
+
+![http_6](http/6.png)
+
+By default for non-browser clients technical information (as status, headers, url) will be ignored.
+You can change this and rename response keys
+
+Example:
+
 
