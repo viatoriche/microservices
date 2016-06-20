@@ -399,3 +399,53 @@ Result:
 ```
 
 You can write your Client class, where override method `handle_response` for customization
+
+## Production
+
+Microservice app - is a fully WSGI application, you can use it with any wsgi servers.
+
+Microservices library provide you runners for help deployment.
+
+### Gevent
+
+```
+from microservices.http.runners import gevent_run
+from basic import microservice
+from microservices.utils import set_logging
+
+set_logging()
+
+gevent_run(microservice)
+```
+
+### Tornado
+
+Single server and use gevent for asynchronizing
+
+```
+from microservices.http.runners import tornado_run
+from basic import microservice
+from microservices.utils import set_logging
+
+set_logging()
+
+tornado_run(microservice, use_gevent=True)
+```
+
+Many servers in one process and use gevent for asynchronizing
+
+```
+from microservices.http.runners import tornado_combiner
+from basic import microservice
+from microservices.utils import set_logging
+
+set_logging()
+
+tornado_combiner(
+    [
+        {'app': microservice, 'port': 5000},
+        {'app': microservice, 'port': 5001}
+    ],
+    use_gevent=True,
+)
+```
