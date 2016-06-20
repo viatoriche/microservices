@@ -1,7 +1,10 @@
 import unittest
 import json
 from microservices.utils import set_logging
+import six
+
 set_logging()
+
 
 class TestHTTP(unittest.TestCase):
     def setUp(self):
@@ -10,15 +13,16 @@ class TestHTTP(unittest.TestCase):
     def tearDown(self):
         pass
 
+
 import requests
 
-class MockRequest(object):
 
+class MockRequest(object):
     def __init__(self, handler=lambda instance, *args, **kwargs: None, **kwargs):
         self.response = requests.Response()
         self.handler = handler
 
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
             setattr(self.response, k, v)
 
     def handle(self, *args, **kwargs):
@@ -28,11 +32,12 @@ class MockRequest(object):
         self.handle(*args, **kwargs)
         return self.response
 
+
 def patch_requests(request):
     requests.request = request
 
-class TestService(TestHTTP):
 
+class TestService(TestHTTP):
     def test_service(self):
         import service
 
@@ -72,8 +77,8 @@ class TestService(TestHTTP):
 
         self.assertEqual(data['test'], 'tested')
 
-class TestClient(unittest.TestCase):
 
+class TestClient(unittest.TestCase):
     def test_client(self):
         from microservices.http.client import Client, ResponseError
 
@@ -118,7 +123,7 @@ class TestClient(unittest.TestCase):
         jopa1 = jopa.resource('1')
         jopa1.post('2', '3', query={'test': 'tested'}, key='response', data=valid_json)
 
-        client = Client('http://endpoint/', ok_statuses=(200, 202, ), to_none_statuses=(404, ))
+        client = Client('http://endpoint/', ok_statuses=(200, 202,), to_none_statuses=(404,))
         valid_url = 'http://endpoint/'
         valid_json = None
         valid_method = 'get'
@@ -134,7 +139,6 @@ class TestClient(unittest.TestCase):
         patch_requests(MockRequest(handler=test_request, _content='{"response": ""}', status_code=200))
         response = client.get(key='response')
         self.assertEqual(response, None)
-
 
         client = Client('http://endpoint/', empty_to_none=False)
         response = client.get(key='response')

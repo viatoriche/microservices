@@ -1,5 +1,4 @@
-import urllib
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 import requests
 

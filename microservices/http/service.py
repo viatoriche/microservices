@@ -10,6 +10,7 @@ from microservices.utils import dict_update
 
 from microservices.http.responses import MicroserviceResponse
 from microservices.http.settings import MicroserviceAPISettings
+from functools import reduce
 
 from flask_api import app
 

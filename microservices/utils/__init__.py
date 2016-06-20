@@ -1,6 +1,7 @@
 import collections
 import six
 
+
 def get_template_source(jinja_env, template_name):
     return jinja_env.loader.get_source(jinja_env, template_name)[0]
 
@@ -41,6 +42,7 @@ def dict_update(d, u):
         else:
             d[k] = u[k]
     return d
+
 
 def is_iterable(obj):
     return isinstance(obj, collections.Iterable)
