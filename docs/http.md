@@ -236,3 +236,166 @@ resource=ResourceMarker(
     }
 )
 ```
+
+## More resources
+
+Let's add new resource
+
+```
+from flask import request
+```
+
+```
+@app.route(
+    '/<string:one>/<string:two>/<string:three>/',
+    methods=['GET', 'POST'],
+    resource=ResourceMarker()
+)
+def one_two_three(one, two, three):
+    response = {'one': one, 'two': two, 'three': three}
+    if request.method == 'POST':
+        response['data'] = request.data
+    return response
+```
+
+Let's open in browser [http://localhost:5000/1/2/3/](http://localhost:5000/1/2/3/)
+
+![http_8](http/8.png)
+
+In response added field - `resources`
+
+This is a information about all resources in Microservice.
+You can see `url` (clickable), `methods` and `schema`
+
+If you open [http://localhost:5000](http://localhost:5000)
+You will see information about resource `"/<string:one>/<string:two>/<string:three>/"`
+
+Where `url`? Not found, because microservice don't know how to create url dynamically,
+but you know, and you can say microservice how to create url
+
+Let's do it
+```
+@app.route(
+    '/<string:one>/<string:two>/<string:three>/',
+    methods=['GET', 'POST'],
+    resource=ResourceMarker(
+        url_params={'one': 'one', 'two': 'two', 'three': 'three'}
+    )
+)
+def one_two_three(one, two, three):
+```
+Result:
+
+![http_9](http/9.png)
+
+## Client
+
+Let's write a client for our microservice
+
+Create a `hello_world_client.py`
+
+And add this code
+```
+from microservices.http.client import Client
+
+hello_world = Client('http://localhost:5000')
+
+response = hello_world.get()
+print(response)
+```
+
+and run it `python hello_world_client.py`
+
+You will see
+```
+{u'status': 200, u'result': {u'hello': u'Hello world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
+```
+
+If you want get a result, u can use `key` in method get
+
+```
+response = hello_world.get(key='result')
+```
+
+You will see
+```
+{u'hello': u'Hello world'}
+```
+
+What, if key not found?
+
+```
+response = hello_world.get(key='bad_key')
+```
+
+Will generated an exception `microservices.http.client.ResponseError`
+
+Ex.
+```
+Traceback (most recent call last):
+  File "/home/viator/coding/code/microservices/examples/http/hello_world_client.py", line 5, in <module>
+    response = hello_world.get(key='bad_key')
+  File "/home/viator/coding/code/microservices/microservices/http/client.py", line 89, in __call__
+    return self.client.handle_response(response, response_key=response_key)
+  File "/home/viator/coding/code/microservices/microservices/http/client.py", line 198, in handle_response
+    raise ResponseError(response, 'Response key not found!')
+microservices.http.client.ResponseError: Error status code: 200. Description: Response key not found!
+```
+
+What we can get from exception?
+
+```
+from microservices.http.client import Client
+from microservices.http.client import ResponseError
+from six import print_
+
+hello_world = Client('http://localhost:5000')
+
+try:
+    response = hello_world.get(key='bad_key')
+except ResponseError as error:
+    print_('Data:', error.response.json())
+    print_('Status code:', error.status_code)
+    print_('Description:', error.description)
+    print_('Content:', error.content)
+```
+
+Answer:
+```
+Data: {u'status': 200, u'result': {u'hello': u'Hello world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
+Status code: 200
+Description: Response key not found!
+Content: {"status": 200, "result": {"hello": "Hello world"}, "resource_created": "2016-06-20T17:51:22.358575"}
+```
+
+You can use ResponseError in your code for easy handling errors
+
+What can the Client yet?
+
+Any http methods, like a post, get, delete, patch, put etc...
+
+Let's test a POST method
+
+We can create a new resource from Client
+```
+one_two_three = hello_world.resource('one', 'two', 'three')
+```
+Where `'one', 'two', 'three'` => `http://localhost:5000/one/two/three/`
+
+Let's see how it works:
+
+```
+one_two_three = hello_world.resource('one', 'two', 'three')
+response = one_two_three.post(data={'post': 'test'})
+print_(response)
+result = one_two_three.post(data={'post': 'test'}, key='result')
+print_(result)
+```
+
+Result:
+```
+{u'status': 200, u'result': {u'one': u'one', u'data': {u'post': u'test'}, u'three': u'three', u'two': u'two'}}
+{u'one': u'one', u'data': {u'post': u'test'}, u'three': u'three', u'two': u'two'}
+```
+
+You can write your Client class, where override method `handle_response` for customization
