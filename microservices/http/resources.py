@@ -121,6 +121,7 @@ class ResourceSchema(BaseResourceSchema):
             browser['resource'] = resource
         if methods is not None:
             browser['methods'] = methods
+        browser['response_update'] = response_update
         super(ResourceSchema, self).__init__(
             response=response,
             status=status,
