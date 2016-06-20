@@ -177,6 +177,39 @@ And you will see:
 By default for non-browser clients technical information (as status, headers, url) will be ignored.
 You can change this and rename response keys
 
-Example:
+Lets importing `BrowserResourceSchema`
+```
+from microservices.http.resources import ResourceMarker, ResourceSchema, BrowserResourceSchema
+```
 
+And add some modifications:
+```
+resource=ResourceMarker(
+    update={
+        'resource_created': datetime.datetime.now().isoformat()
+    },
+    schema=ResourceSchema(
+        response='result',
+        response_update=False,
+        status_code='status',
+        browser=BrowserResourceSchema(
+            status=None,
+        )
+    )
+),
+```
+
+In browser you will see
+
+![http_7](http/7.png)
+
+Was `status_code` - now - `status`
+
+In real client you will see:
+
+```
+{"status": 200, "result": {"hello": "Hello world"}, "resource_created": "2016-06-20T14:02:50.684756"}
+```
+
+## Settings
 
