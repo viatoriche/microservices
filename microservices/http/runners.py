@@ -48,7 +48,7 @@ def tornado_start():
 
 
 def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey_patch=None, Container=None,
-                Server=None):
+                Server=None, threadpool=None):
     """Run your app in one tornado event loop process
 
     :param app: wsgi application, Microservice instance
@@ -90,6 +90,22 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey
 
         CustomWSGIContainer = GeventWSGIContainer
 
+    if threadpool is not None:
+        from multiprocessing.pool import ThreadPool
+        from tornado.ioloop import IOLoop
+
+        _workers = ThreadPool(threadpool)
+
+        class ThreadPoolWSGIContainer(Container):
+            def __call__(self, *args, **kwargs):
+                def async_task():
+                    super(ThreadPoolWSGIContainer, self).__call__(*args, **kwargs)
+
+                _workers.apply(async_task)
+
+        CustomWSGIContainer = ThreadPoolWSGIContainer
+
+
     http_server = Server(CustomWSGIContainer(app))
     http_server.listen(port, address)
     if start:
@@ -97,7 +113,7 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey
     return http_server
 
 
-def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, Container=None, Server=None):
+def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, Container=None, Server=None, threadpool=None):
     """Combine servers in one tornado event loop process
 
     :param configs: [
@@ -130,7 +146,7 @@ def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, C
         address = config.get('address', '')
         server = tornado_run(app, use_gevent=use_gevent, port=port, monkey_patch=False, address=address, start=False,
                              Container=Container,
-                             Server=Server)
+                             Server=Server, threadpool=threadpool)
         servers.append(server)
     if start:
         tornado_start()
