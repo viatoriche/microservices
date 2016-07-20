@@ -92,16 +92,16 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey
 
     if threadpool is not None:
         from multiprocessing.pool import ThreadPool
-        from tornado.ioloop import IOLoop
 
-        _workers = ThreadPool(threadpool)
+        if not isinstance(threadpool, ThreadPool):
+            threadpool = ThreadPool(threadpool)
 
         class ThreadPoolWSGIContainer(Container):
             def __call__(self, *args, **kwargs):
                 def async_task():
                     super(ThreadPoolWSGIContainer, self).__call__(*args, **kwargs)
 
-                _workers.apply(async_task)
+                threadpool.apply_async(async_task)
 
         CustomWSGIContainer = ThreadPoolWSGIContainer
 
@@ -139,6 +139,12 @@ def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, C
         if monkey_patch:
             from gevent import monkey
             monkey.patch_all()
+
+    if threadpool is not None:
+        from multiprocessing.pool import ThreadPool
+
+        if not isinstance(threadpool, ThreadPool):
+            threadpool = ThreadPool(threadpool)
 
     for config in configs:
         app = config['app']
