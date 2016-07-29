@@ -56,7 +56,7 @@ class TestService(TestHTTP):
             from flask import request
 
             if request.method == 'GET':
-                return {'test': 'tested'}
+                return {u'test': u'tested'}
 
         @microservice.route(
             '/test',
@@ -68,10 +68,10 @@ class TestService(TestHTTP):
             from flask import request
 
             if request.method == 'GET':
-                return ['tested']
+                return [u'tested']
 
         resp = app.get('/')
-        data = resp.data
+        data = resp.get_data(as_text=True)
 
         data = json.loads(data)
 
@@ -91,7 +91,7 @@ class TestClient(unittest.TestCase):
             self.assertEqual(url, valid_url)
             self.assertEqual(kwargs.get('json', None), valid_json)
 
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=200))
 
         client = Client('http://user:password@endpoint:8000/test/1')
         response = client.get()
@@ -127,16 +127,16 @@ class TestClient(unittest.TestCase):
         valid_url = 'http://endpoint/'
         valid_json = None
         valid_method = 'get'
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=404))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=404))
         client.get(key='response')
         client.get(key='response_no')
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=200))
         client.get(key='response')
         self.assertRaises(ResponseError, client.get, key='response_no')
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=500))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=500))
         self.assertRaises(ResponseError, client.get, key='response')
 
-        patch_requests(MockRequest(handler=test_request, _content='{"response": ""}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": ""}', status_code=200))
         response = client.get(key='response')
         self.assertEqual(response, None)
 
@@ -144,9 +144,9 @@ class TestClient(unittest.TestCase):
         response = client.get(key='response')
         self.assertEqual(response, "")
 
-        patch_requests(MockRequest(handler=test_request, _content='bad', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'bad', status_code=200))
         self.assertRaises(ResponseError, client.get, key='response')
 
-        patch_requests(MockRequest(handler=test_request, _content='["tested"]', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'["tested"]', status_code=200))
         response = client.get()
         self.assertEqual(response, ['tested'])

@@ -1,4 +1,5 @@
 import six.moves.urllib.parse as urlparse
+from six.moves.urllib.parse import urlencode
 
 import requests
 
@@ -171,7 +172,7 @@ class Client(object):
                 path += '/'
         parsed_url[2] = path
         if query is not None:
-            parsed_url[4] = urllib.urlencode(query, doseq=1)
+            parsed_url[4] = urlencode(query, doseq=1)
         url = urlparse.urlunparse(parsed_url)
         self.logger.debug('Url {} builded for resource {}'.format(url, resource))
         return url
@@ -187,8 +188,8 @@ class Client(object):
         try:
             result = response.json()
         except Exception as e:
-            self.logger.exception(str(e))
-            raise ResponseError(response, str(e))
+            self.logger.exception(e)
+            raise ResponseError(response, e)
 
         if result:
             if response_key is not None and status_code in self.ok_statuses:
