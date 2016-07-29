@@ -138,7 +138,10 @@ class MicroserviceJSONRenderer(JSONRenderer, MicroserviceRendererMixin):
             indent = None
         # Indent may be set explicitly, eg when rendered by the browsable API.
         indent = options.get('indent', indent)
-        return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent, encoding=self.charset)
+        if six.PY2:
+            return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent, encoding=self.charset)
+        else:
+            return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent)
 
 
 class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendererMixin):
