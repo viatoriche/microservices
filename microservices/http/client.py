@@ -70,7 +70,7 @@ class _requests_method(object):
         :return: one/two/three
         """
         resource = '/'.join(resources)
-        self.logger.debug('Resource {} builded from {}'.format(resource, resources))
+        self.logger.debug('Resource %s builded from %s', resource, resources)
         return resource
 
     def __call__(self, *resources, **kwargs):
@@ -85,7 +85,7 @@ class _requests_method(object):
         if data is not None:
             kwargs['json'] = data
         url = self.client.url_for(resource, query)
-        self.logger.info('{}: {}'.format(self.method, url))
+        self.logger.info('%s: %s', self.method, url)
         response = requests.request(self.method, url, timeout=timeout, **kwargs)
         return self.client.handle_response(response, response_key=response_key)
 
@@ -145,7 +145,7 @@ class Client(object):
         endpoint = self.get_endpoint_from_parsed_url(parsed_url)
         self.endpoint = endpoint
         self.path = parsed_url.path
-        self.logger.debug('Client builded for endpoint {} and path {}'.format(self.endpoint, self.path))
+        self.logger.debug('Client builded for endpoint %s and path %s', self.endpoint, self.path)
 
     @staticmethod
     def get_endpoint_from_parsed_url(parsed_url):
@@ -174,7 +174,7 @@ class Client(object):
         if query is not None:
             parsed_url[4] = urlencode(query, doseq=1)
         url = urlparse.urlunparse(parsed_url)
-        self.logger.debug('Url {} builded for resource {}'.format(url, resource))
+        self.logger.debug('Url %s builded for resource %s', url, resource)
         return url
 
     def handle_response(self, response, response_key=None):
