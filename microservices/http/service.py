@@ -50,14 +50,15 @@ class Microservice(FlaskAPI):
             self.resources[rule] = dict_update(orig_resource, resource)
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
-        resource = options.pop('resource', None)
+        resource = options.pop('resource_marker', options.pop('resource', None))
         super(Microservice, self).add_url_rule(rule, endpoint=endpoint, view_func=view_func, **options)
-        rule_infos = [rule_info for rule_info in self.url_map._rules if rule_info.rule == rule]
-        methods = list(set(reduce(lambda i, j: list(i) + list(j), [rule_info.methods for rule_info in rule_infos])))
-        endpoints = reduce(lambda i, j: [i, j], [rule_info.endpoint for rule_info in rule_infos])
-        if not isinstance(endpoints, list):
-            endpoints = [endpoints]
-        self.add_resource(resource, rule, endpoints=endpoints, methods=methods)
+        if resource is not None:
+            rule_infos = [rule_info for rule_info in self.url_map._rules if rule_info.rule == rule]
+            methods = list(set(reduce(lambda i, j: list(i) + list(j), [rule_info.methods for rule_info in rule_infos])))
+            endpoints = reduce(lambda i, j: [i, j], [rule_info.endpoint for rule_info in rule_infos])
+            if not isinstance(endpoints, list):
+                endpoints = [endpoints]
+            self.add_resource(resource, rule, endpoints=endpoints, methods=methods)
 
     def make_response(self, rv):
         """
