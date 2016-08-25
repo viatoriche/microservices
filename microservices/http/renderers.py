@@ -6,12 +6,20 @@ from flask_api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
 from flask import url_for
 from werkzeug.routing import BuildError
+from microservices.utils import get_logger
 import six
+
+logger = get_logger('Microservices renderers')
 
 class MicroserviceRendererMixin(object):
     def pre_render(self, data, media_type, browser=False, **options):
 
-        rule = request.url_rule.rule
+        rule = None
+        url_rule = request.url_rule
+        if url_rule is not None:
+            rule = url_rule.rule
+        if rule is None:
+            return data
 
         app = options.get('app', None)
 
@@ -149,5 +157,10 @@ class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendere
 
     def render(self, data, *args, **options):
         data = self.pre_render(data, browser=True, *args, **options)
-        result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
+        try:
+            result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
+        except Exception as e:
+            logger.exception(e)
+            return data
+
         return result[:self.max_length]
