@@ -1,6 +1,6 @@
 MAJOR = 0
 MINOR = 17
-PATCH = 7
+PATCH = 8
 
 
 def get_version(suffix=''):
