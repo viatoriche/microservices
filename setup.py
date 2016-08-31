@@ -23,6 +23,7 @@ def get_package_data(package):
                           for filename in filenames])
     return {package: filepaths}
 
+
 setup(
     name=package,
     version=version,
@@ -34,5 +35,7 @@ setup(
     description='Microservices builder',
     url='https://github.com/viatoriche/microservices',
     download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(version),
-    install_requires=['Flask-API==0.6.7', 'Flask>=0.10.1', 'addict>=1.0.0', 'requests', 'six', 'Markdown==2.6.6'],
+    install_requires=['Flask-API==0.6.7', 'Flask>=0.10.1', 'addict>=1.0.0', 'requests>=2.10.0', 'six',
+                      'Markdown==2.6.6',
+                      'kombu>=3.0.35'],
 )
