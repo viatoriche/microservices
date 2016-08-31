@@ -39,7 +39,7 @@ def patch_requests(request):
 
 class TestService(TestHTTP):
     def test_service(self):
-        import service
+        from microservices.http import service
 
         microservice = service.Microservice(__name__)
         microservice.config['TESTING'] = True
