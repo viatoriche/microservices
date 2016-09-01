@@ -30,9 +30,11 @@ def set_logging(level='DEBUG', log_format='%(asctime)s - %(name)s - %(levelname)
     )
 
 
-def get_logger(name=__name__):
+def get_logger(name=__name__, prefix='', delimiter=''):
     import logging
-    return logging.getLogger(name)
+    if prefix and not delimiter:
+        delimiter = '.'
+    return logging.getLogger('{}{}{}'.format(prefix, delimiter, name))
 
 
 def dict_update(d, u):

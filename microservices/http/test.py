@@ -150,3 +150,13 @@ class TestClient(unittest.TestCase):
         patch_requests(MockRequest(handler=test_request, _content=b'["tested"]', status_code=200))
         response = client.get()
         self.assertEqual(response, ['tested'])
+
+        from microservices.utils import get_logger
+
+        logger = get_logger('test', 'jopa')
+
+        self.assertEqual(logger.name, 'jopa.test')
+
+        logger = get_logger('test', 'jopa', '_')
+
+        self.assertEqual(logger.name, 'jopa_test')
