@@ -25,9 +25,9 @@ def gevent_basic(payload, context):
         context.rule.name,
     )
 
-gevent_run(app1)
-gevent_run(app2)
-gevent_run(app3)
+gevent_run(app1, start=False, monkey_patch=False, debug=True)
+gevent_run(app2, start=False, monkey_patch=False, debug=True)
+gevent_run(app3, start=False, monkey_patch=False, debug=True)
 
 client = Client()
 
