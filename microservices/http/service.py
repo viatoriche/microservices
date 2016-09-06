@@ -13,7 +13,14 @@ from microservices.http.settings import MicroserviceAPISettings
 from functools import reduce
 
 from flask_api import app
+import sys
 
+# Remove after maintainer fix: https://github.com/tomchristie/flask-api/pull/62
+from werkzeug.exceptions import HTTPException
+from flask_api.exceptions import APIException
+from flask_api.compat import is_flask_legacy
+from itertools import chain
+from flask._compat import reraise, string_types, text_type
 
 class Microservice(FlaskAPI):
     response_class = MicroserviceResponse
@@ -91,3 +98,36 @@ class Microservice(FlaskAPI):
             rv.headers.extend(headers)
 
         return rv
+
+    # Remove after maintainer fix: https://github.com/tomchristie/flask-api/pull/62
+    def handle_user_exception(self, e):
+        """
+        We override the default behavior in order to deal with APIException.
+        """
+        exc_type, exc_value, tb = sys.exc_info()
+        assert exc_value is e
+
+        if isinstance(e, HTTPException) and not self.trap_http_exception(e):
+            return self.handle_http_exception(e)
+
+        if isinstance(e, APIException):
+            return self.handle_api_exception(e)
+
+        blueprint_handlers = ()
+        handlers = self.error_handler_spec.get(request.blueprint)
+        if handlers is not None:
+            blueprint_handlers = handlers.get(None, ())
+        app_handlers = self.error_handler_spec[None].get(None, ())
+        if is_flask_legacy():
+            for typecheck, handler in chain(blueprint_handlers, app_handlers):
+                if isinstance(e, typecheck):
+                    return handler(e)
+        else:
+            for typecheck, handler in chain(
+                    dict(blueprint_handlers).items(),
+                    dict(app_handlers).items()
+            ):
+                if isinstance(e, typecheck):
+                    return handler(e)
+
+        reraise(exc_type, exc_value, tb)
