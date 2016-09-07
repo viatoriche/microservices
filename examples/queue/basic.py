@@ -4,7 +4,7 @@ from microservices.utils import set_logging, get_logger
 
 
 set_logging()
-logger = get_logger()
+logger = get_logger('basic')
 
 app = Microservice()
 

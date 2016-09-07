@@ -10,7 +10,7 @@ class TestService(unittest.TestCase):
         from microservices.queues.client import Client
         from kombu.connection import Connection
 
-        microservice = Microservice('memory:///')
+        microservice = Microservice('memory:///', timeout=1)
 
         connection = Connection('memory:///')
 
@@ -44,10 +44,8 @@ class TestService(unittest.TestCase):
         input_e_one.publish('data')
         input_e_two.publish('data')
 
-        microservice.handle_connections()
-        microservice.handle_connections()
-        microservice.handle_connections()
-
         client.delete_queue('one_q')
         client.delete_exchange('input')
         client.purge_queue('two_q')
+
+        microservice.read(count=5)
