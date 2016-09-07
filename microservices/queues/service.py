@@ -41,14 +41,14 @@ class Microservice(object):
 
     default_connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///', logger=None, period=0.05):
+    def __init__(self, connection='amqp:///', logger=None, period=0.1):
         """Initialization
 
         :param connection: connection for queues broker
         :type connection: str, None, dict or Connection
         :param logger: logging instance
         :type logger: Logger
-        :param period: sleeping for loop, default = 0.05
+        :param period: sleeping for loop, default = 0.1
         :type period: None, int or float
         """
         if logger is None:
@@ -134,9 +134,8 @@ class Microservice(object):
                     handler(message.payload, HandlerContext(message, connection, rule))
                     message.ack()
                 except orig_queue.Empty:
-                    pass
+                    gevent_sleep(self.period)
                 simple_queue.close()
-                gevent_sleep(self.period)
                 gevent_switch()
 
     def handle_connections(self):
