@@ -41,14 +41,14 @@ class Microservice(object):
 
     default_connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///', logger=None, period=None):
+    def __init__(self, connection='amqp:///', logger=None, period=0.05):
         """Initialization
 
         :param connection: connection for queues broker
         :type connection: str, None, dict or Connection
         :param logger: logging instance
         :type logger: Logger
-        :param period: sleeping for loop, default = None
+        :param period: sleeping for loop, default = 0.05
         :type period: None, int or float
         """
         if logger is None:
@@ -136,6 +136,8 @@ class Microservice(object):
                 except orig_queue.Empty:
                     pass
                 simple_queue.close()
+                gevent_sleep(self.period)
+                gevent_switch()
 
     def handle_connections(self):
         """Handle all connections in Microservice"""
@@ -154,6 +156,4 @@ class Microservice(object):
 
             set_logging('DEBUG')
         while True:
-            gevent_sleep(self.period)
-            gevent_switch()
             self.handle_connections()
