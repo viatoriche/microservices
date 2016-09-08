@@ -123,6 +123,8 @@ class Microservice(object):
                     except socket.timeout:
                         if not infinity:
                             return
+                    except Exception as e:
+                        self.logger.exception(e)
 
     def run(self, debug=False):
         """Run microservice in loop, where handle connections
