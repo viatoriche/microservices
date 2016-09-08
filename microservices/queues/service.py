@@ -2,7 +2,6 @@ import socket
 
 from kombu import Connection, Queue, Consumer
 from kombu.utils import nested
-from kombu.pools import connections
 
 from microservices.utils import get_logger
 
@@ -91,10 +90,9 @@ class Microservice(object):
         :type name: str
         """
 
-        with connections[self.connection].acquire() as conn:
-            rule = Rule(name, handler, **kwargs)
-            consumer = Consumer(conn, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
-            self.consumers.append(consumer)
+        rule = Rule(name, handler, **kwargs)
+        consumer = Consumer(self.connection, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
+        self.consumers.append(consumer)
 
     def queue(self, name, **kwargs):
         """Decorator for handler function
@@ -115,16 +113,15 @@ class Microservice(object):
         return decorator
 
     def drain_events(self, infinity=True):
-        with connections[self.connection].acquire() as conn:
-            with nested(*self.consumers):
-                while True:
-                    try:
-                        conn.drain_events(timeout=self.timeout)
-                    except socket.timeout:
-                        if not infinity:
-                            return
-                    except Exception as e:
-                        self.logger.exception(e)
+        with nested(*self.consumers):
+            while True:
+                try:
+                    self.connection.drain_events(timeout=self.timeout)
+                except socket.timeout:
+                    if not infinity:
+                        return
+                except Exception as e:
+                    self.logger.exception(e)
 
     def run(self, debug=False):
         """Run microservice in loop, where handle connections
