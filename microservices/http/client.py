@@ -1,5 +1,6 @@
 import six.moves.urllib.parse as urlparse
 from six.moves.urllib.parse import urlencode
+import six
 
 import requests
 
@@ -80,11 +81,13 @@ class _requests_method(object):
             response_key = key
         query = kwargs.pop('query', None)
         data = kwargs.pop('data', None)
+        fragment = kwargs.pop('fragment', '')
+        params = kwargs.pop('params', '')
         timeout = kwargs.pop('timeout', 60)
         resource = self.build_resource(resources)
         if data is not None:
             kwargs['json'] = data
-        url = self.client.url_for(resource, query)
+        url = self.client.url_for(resource, query, params=params, fragment=fragment)
         self.logger.info('%s: %s', self.method, url)
         response = requests.request(self.method, url, timeout=timeout, **kwargs)
         return self.client.handle_response(response, response_key=response_key)
@@ -115,7 +118,7 @@ class Resource(object):
 
 
 class Client(object):
-    ok_statuses = (200, 202,)
+    ok_statuses = (200, 201, 202,)
     to_none_statuses = (404,)
 
     def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True,
@@ -145,14 +148,19 @@ class Client(object):
         endpoint = self.get_endpoint_from_parsed_url(parsed_url)
         self.endpoint = endpoint
         self.path = parsed_url.path
-        self.logger.debug('Client builded for endpoint %s and path %s', self.endpoint, self.path)
+        self.query = urlparse.parse_qs(parsed_url.query)
+        self.fragment = parsed_url.fragment
+        self.params = parsed_url.params
+        self.logger.debug('Client builded for endpoint: "%s", path: "%s", query: %s, params: %s, fragment: %s',
+                          self.endpoint, self.path,
+                          self.query, self.params, self.fragment)
 
     @staticmethod
     def get_endpoint_from_parsed_url(parsed_url):
         url_list = [(lambda: x if e < 2 else '')() for e, x in enumerate(list(parsed_url))]
         return urlparse.urlunparse(url_list)
 
-    def url_for(self, resource='', query=None):
+    def url_for(self, resource='', query=None, params='', fragment=''):
         """Generate url for resource
 
         Use endpoint for generation
@@ -162,7 +170,9 @@ class Client(object):
             if endpoint == http://localhost:5000/api/
 
         :param resource: str
-        :param query: dict for generate query string {a: 1, b: 2} -> ?a=1&b=2
+        :param query: dict for generate query string {a: 1, b: 2} -> ?a=1&b=2, or string
+        :param params: params for last path url
+        :param fragment: #fragment
         :return: str, url
         """
         parsed_url = list(urlparse.urlparse(self.endpoint))
@@ -170,9 +180,22 @@ class Client(object):
         if self.close_slash:
             if not path.endswith('/'):
                 path += '/'
+        if not params:
+            params = self.params
+        if not fragment:
+            fragment = self.fragment
         parsed_url[2] = path
+        parsed_url[3] = params
+        parsed_url[5] = fragment
+        if self.query:
+            parsed_url[4] = urlencode(self.query, doseq=1)
         if query is not None:
-            parsed_url[4] = urlencode(query, doseq=1)
+            if isinstance(query, six.string_types):
+                query = urlparse.parse_qs(query)
+            req_query = dict(self.query)
+            req_query.update(query)
+            req_query = urlencode(req_query, doseq=1)
+            parsed_url[4] = req_query
         url = urlparse.urlunparse(parsed_url)
         self.logger.debug('Url %s builded for resource %s', url, resource)
         return url

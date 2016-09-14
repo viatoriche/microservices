@@ -18,7 +18,13 @@ import sys
 # Remove after maintainer fix: https://github.com/tomchristie/flask-api/pull/62
 from werkzeug.exceptions import HTTPException
 from flask_api.exceptions import APIException
-from flask_api.compat import is_flask_legacy
+try:
+    from flask_api.compat import is_flask_legacy
+except ImportError:
+    from flask import __version__ as flask_version
+    def is_flask_legacy():
+        v = flask_version.split(".")
+        return int(v[0]) == 0 and int(v[1]) < 11
 from itertools import chain
 from flask._compat import reraise, string_types, text_type
 
