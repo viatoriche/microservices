@@ -2,6 +2,7 @@ import socket
 
 from kombu import Connection, Queue, Consumer
 from kombu.utils import nested
+from kombu.exceptions import MessageStateError
 
 from microservices.utils import get_logger
 
@@ -23,7 +24,10 @@ class Rule(object):
     def callback(self, body, message):
         _logger.debug('Received data from %s' % (self.name, ))
         self.handler(body, HandlerContext(message, self))
-        message.ack()
+        try:
+            message.ack()
+        except MessageStateError as e:
+            _logger.warning('ACK() was called in handler?')
 
 class HandlerContext(object):
     """Context for handler function"""
