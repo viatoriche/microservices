@@ -176,7 +176,10 @@ class Client(object):
         :return: str, url
         """
         parsed_url = list(urlparse.urlparse(self.endpoint))
-        path = self.path + '/' + resource
+        if resource:
+            path = self.path + '/' + resource
+        else:
+            path = self.path
         if self.close_slash:
             if not path.endswith('/'):
                 path += '/'
