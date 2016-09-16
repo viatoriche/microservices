@@ -1,6 +1,6 @@
 from microservices.http.service import Microservice
 from microservices.http.runners import base_run as run
-from microservices.http.resources import ResourceMarker
+from microservices.http.resources import ResourceMarker, ResourceSchema, BrowserResourceSchema
 from microservices.utils import set_logging
 from flask import request, url_for
 
@@ -63,7 +63,13 @@ def second_params_two(test, two):
     '/',
     endpoint='Hello world!',
     methods=['GET', 'POST'],
-    resource=ResourceMarker(),
+    resource=ResourceMarker(
+        schema=ResourceSchema(
+            browser=BrowserResourceSchema(
+                resources='resources',
+            )
+        )
+    ),
 )
 def hello():
     """

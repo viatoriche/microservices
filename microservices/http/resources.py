@@ -61,7 +61,7 @@ class BrowserResourceSchema(BaseResourceSchema):
             request='request',
             status_code='status_code',
             headers='headers',
-            resources='resources',
+            resources=None,
             resource='resource',
             methods='methods',
             ignore_for_methods=None,
