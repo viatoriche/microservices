@@ -1,12 +1,17 @@
 from kombu import Connection
 from kombu.pools import connections
 from kombu import Exchange, Queue
+from microservices.utils import get_logger
+from microservices.helpers.logs import InstanceLogger
+import six
+
+_logger = get_logger(__file__)
 
 
 class _exchange(object):
     """Exchange helper"""
 
-    def __init__(self, client, name, routing_key=None):
+    def __init__(self, client, name, routing_key=None, logger=None):
         """Initialization
 
         :param client: instance of client
@@ -19,6 +24,11 @@ class _exchange(object):
         self.client = client
         self.name = name
         self.routing_key = routing_key
+        if logger is None:
+            logger = _logger
+        self.logger = logger
+        self.logger.debug('Exchange "%s" built, routing_key: %s', self.name,
+                          self.routing_key if not self.routing_key is None else '')
 
     def publish(self, message, routing_key=None):
         """Publish message to exchange
@@ -36,7 +46,7 @@ class _exchange(object):
 class _queue(object):
     """Queue helper"""
 
-    def __init__(self, client, name):
+    def __init__(self, client, name, logger=None):
         """Initialization
 
         :param client: instance of client
@@ -46,6 +56,10 @@ class _queue(object):
         """
         self.client = client
         self.name = name
+        if logger is None:
+            logger = _logger
+        self.logger = logger
+        self.logger.debug('Queue "%s" built', self.name)
 
     def publish(self, message):
         """Publish message to queue
@@ -57,12 +71,13 @@ class _queue(object):
         return self.client.publish_to_queue(self.name, message=message)
 
 
+@six.python_2_unicode_compatible
 class Client(object):
     """Client for queue brokers, kombu based"""
 
     default_connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///'):
+    def __init__(self, connection='amqp:///', name=None, logger=None):
         """Initialization of Client instance
 
         :param connection: connection for broker
@@ -71,6 +86,20 @@ class Client(object):
 
         self.connection = self._get_connection(connection)
         self.exchanges = {}
+
+        if name is None:
+            name = '<client: {}>'.format(self.connection.as_uri())
+
+        if logger is None:
+            logger = get_logger(__name__)
+
+        self.logger = InstanceLogger(self, logger)
+
+        self.name = name
+        self.logger.debug('Client built for connection: %s', self.connection.as_uri())
+
+    def __str__(self):
+        return self.name
 
     def _get_connection(self, connection):
         """Create connection strategy
@@ -114,6 +143,8 @@ class Client(object):
                 queue = Queue(name=q_name, channel=conn)
                 queue.declare()
                 queue.bind_to(exchange=name, routing_key=routing_key)
+                self.logger.debug('Queue "%s" with routing_key "%s" was bond to exchange "%s"', q_name,
+                                  routing_key if routing_key else q_name, name)
 
     def delete_exchange(self, name):
         """Delete exchange by name
@@ -124,6 +155,7 @@ class Client(object):
         with connections[self.connection].acquire() as conn:
             exchange = self.exchanges.pop(name, Exchange(name, channel=conn))
             exchange.delete()
+            self.logger.debug('Exchange "%s" was deleted', name)
 
     def purge_queue(self, name):
         """Remove all messages from queue
@@ -133,6 +165,7 @@ class Client(object):
         """
         with connections[self.connection].acquire() as conn:
             Queue(name=name, channel=conn).purge()
+            self.logger.debug('Queue "%s" was purged', name)
 
     def delete_queue(self, name):
         """Delete queue by name
@@ -142,6 +175,7 @@ class Client(object):
         """
         with connections[self.connection].acquire() as conn:
             Queue(name=name, channel=conn).delete()
+            self.logger.debug('Queue "%s" was deleted', name)
 
     def exchange(self, name, routing_key=None):
         """Create exchange instance for simple publishing
@@ -152,7 +186,7 @@ class Client(object):
         :type routing_key: str
         :return: _exchange
         """
-        return _exchange(self, name, routing_key=routing_key)
+        return _exchange(self, name, routing_key=routing_key, logger=self.logger)
 
     def queue(self, name):
         """Create queue instance for simple publishing
@@ -161,7 +195,7 @@ class Client(object):
         :type name: str
         :return: _queue
         """
-        return _queue(self, name)
+        return _queue(self, name, logger=self.logger)
 
     def publish_to_exchange(self, name, routing_key, message, **properties):
         """Publish message to exchange
@@ -176,7 +210,11 @@ class Client(object):
         """
         with connections[self.connection].acquire() as conn:
             producer = conn.Producer()
-            return producer.publish(message, exchange=self.exchanges[name], routing_key=routing_key, **properties)
+            result = producer.publish(message, exchange=self.exchanges[name], routing_key=routing_key, **properties)
+            self.logger.info('Message (len: %s) was published to exchange "%s" with routing_key "%s"', len(message),
+                             name,
+                             routing_key if routing_key else '')
+            return result
 
     def publish_to_queue(self, name, message, **properties):
         """Publish message to queue
@@ -191,3 +229,4 @@ class Client(object):
             simple_queue = conn.SimpleQueue(name, **properties)
             simple_queue.put(message)
             simple_queue.close()
+            self.logger.info('Message (len: %s) was published to queue "%s"', len(message), name)

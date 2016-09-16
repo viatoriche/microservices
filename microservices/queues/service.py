@@ -3,15 +3,18 @@ import socket
 from kombu import Connection, Queue, Consumer
 from kombu.utils import nested
 from kombu.exceptions import MessageStateError
+import six
 
 from microservices.utils import get_logger
+from microservices.helpers.logs import InstanceLogger
 
-_logger = get_logger('Microservices queues')
+_logger = get_logger(__name__)
 
+@six.python_2_unicode_compatible
 class Rule(object):
     """Rule"""
 
-    def __init__(self, name, handler, **options):
+    def __init__(self, name, handler, logger, **options):
         """Initialization
 
         :param name: name of queue
@@ -20,14 +23,20 @@ class Rule(object):
         self.handler = handler
         self.name = name
         self.options = options
+        self.logger = InstanceLogger(self, logger)
+        self._name = '<queue: {}>'.format(self.name)
+
+    def __str__(self):
+        return self._name
 
     def callback(self, body, message):
-        _logger.debug('Received data from %s' % (self.name, ))
+        self.logger.info('Data (len: %s) received', len(body))
         self.handler(body, HandlerContext(message, self))
         try:
             message.ack()
         except MessageStateError as e:
-            _logger.warning('ACK() was called in handler?')
+            self.logger.warning('ACK() was called in handler?')
+
 
 class HandlerContext(object):
     """Context for handler function"""
@@ -43,12 +52,14 @@ class HandlerContext(object):
         self.message = message
         self.rule = rule
 
+
+@six.python_2_unicode_compatible
 class Microservice(object):
     """Microservice for queues"""
 
     connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///', logger=None, timeout=10):
+    def __init__(self, connection='amqp:///', logger=None, timeout=10, name=None):
         """Initialization
 
         :param connection: connection for queues broker
@@ -61,10 +72,18 @@ class Microservice(object):
         if logger is None:
             logger = _logger
 
-        self.logger = logger
+        self.logger = InstanceLogger(self, logger)
         self.connection = self._get_connection(connection)
         self.timeout = timeout
         self.consumers = []
+
+        if name is None:
+            name = '<microservice: {}>'.format(self.connection.as_uri())
+
+        self.name = name
+
+    def __str__(self):
+        return self.name
 
     def _get_connection(self, connection):
         """Create connection strategy
@@ -94,9 +113,10 @@ class Microservice(object):
         :type name: str
         """
 
-        rule = Rule(name, handler, **kwargs)
+        rule = Rule(name, handler, self.logger, **kwargs)
         consumer = Consumer(self.connection, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
         self.consumers.append(consumer)
+        self.logger.debug('Rule "%s" added!', rule.name)
 
     def queue(self, name, **kwargs):
         """Decorator for handler function
@@ -110,6 +130,7 @@ class Microservice(object):
         :param name: name of queue
         :type name: str
         """
+
         def decorator(f):
             self.add_queue_rule(f, name, **kwargs)
             return f

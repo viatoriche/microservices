@@ -3,8 +3,6 @@
 from addict.addict import Dict
 from flask import Blueprint
 from flask import request
-from flask._compat import string_types
-from flask._compat import text_type
 from flask_api import FlaskAPI
 from microservices.utils import dict_update
 

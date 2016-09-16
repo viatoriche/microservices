@@ -1,9 +1,9 @@
+import requests
+import six
 import six.moves.urllib.parse as urlparse
 from six.moves.urllib.parse import urlencode
-import six
 
-import requests
-
+from microservices.helpers.logs import InstanceLogger
 from microservices.utils import get_logger
 
 
@@ -71,7 +71,7 @@ class _requests_method(object):
         :return: one/two/three
         """
         resource = '/'.join(resources)
-        self.logger.debug('Resource %s builded from %s', resource, resources)
+        self.logger.debug('Resource "%s" built from %s', resource, resources)
         return resource
 
     def __call__(self, *resources, **kwargs):
@@ -88,7 +88,7 @@ class _requests_method(object):
         if data is not None:
             kwargs['json'] = data
         url = self.client.url_for(resource, query, params=params, fragment=fragment)
-        self.logger.info('%s: %s', self.method, url)
+        self.logger.info('Request %s for %s', self.method, url)
         response = requests.request(self.method, url, timeout=timeout, **kwargs)
         return self.client.handle_response(response, response_key=response_key)
 
@@ -117,25 +117,31 @@ class Resource(object):
         return Resource(self.client, resources)
 
 
+@six.python_2_unicode_compatible
 class Client(object):
     ok_statuses = (200, 201, 202,)
     to_none_statuses = (404,)
 
     def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True,
-                 logger=None):
+                 logger=None, name=None):
         """Create a client
 
         :param endpoint: str, ex. http://localhost:5000 or http://localhost:5000/api/
-        :param ok_statuses: default - (200, 202, ), status codes for "ok"
+        :param ok_statuses: default - (200, 201, 202, ), status codes for "ok"
         :param to_none_statuses: statuses, for generate None as response, default - (404, )
         :param empty_to_none: boolean, default - True, if True - empty response will be generate None response (empty str, empty list, empty dict)
         :param close_slash: boolean, url += '/', if url.endswith != '/', default - True
         :param logger: logger instance
+        :param name: name for client
+        :type name: str
         """
+        if name is None:
+            name = '<client: {}>'.format(endpoint)
+
         if logger is None:
             logger = get_logger(__name__)
 
-        self.logger = logger
+        self.logger = InstanceLogger(self, logger)
         if endpoint.endswith('/'):
             endpoint = endpoint[:-1]
         if ok_statuses is not None:
@@ -151,9 +157,13 @@ class Client(object):
         self.query = urlparse.parse_qs(parsed_url.query)
         self.fragment = parsed_url.fragment
         self.params = parsed_url.params
-        self.logger.debug('Client builded for endpoint: "%s", path: "%s", query: %s, params: %s, fragment: %s',
+        self.name = name
+        self.logger.debug('Client built, endpoint: "%s", path: "%s", query: %s, params: %s, fragment: %s',
                           self.endpoint, self.path,
                           self.query, self.params, self.fragment)
+
+    def __str__(self):
+        return self.name
 
     @staticmethod
     def get_endpoint_from_parsed_url(parsed_url):
@@ -200,7 +210,7 @@ class Client(object):
             req_query = urlencode(req_query, doseq=1)
             parsed_url[4] = req_query
         url = urlparse.urlunparse(parsed_url)
-        self.logger.debug('Url %s builded for resource %s', url, resource)
+        self.logger.debug('Url %s built for resource "%s"', url, resource)
         return url
 
     def handle_response(self, response, response_key=None):
