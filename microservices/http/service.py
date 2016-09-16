@@ -56,7 +56,7 @@ class Microservice(FlaskAPI):
             resource.schema = schema
             in_resources = self.api_settings.IN_RESOURCES
             if resource.get('in_resources') is not None:
-                in_resources.update(resource.in_resources)
+                in_resources = resource.in_resources
             resource.in_resources = in_resources
             self.resources[rule] = dict_update(orig_resource, resource)
 

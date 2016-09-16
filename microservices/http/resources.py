@@ -145,6 +145,7 @@ class ResourceMarker(dict):
             url=True,
             url_params=None,
             update=None,
+            in_resources=None,
     ):
         """Mark a route as microservice resource
 
@@ -152,6 +153,7 @@ class ResourceMarker(dict):
         :param url: boolean, None, function, string - url for resource, default - True
         :param url_params: params for flask.url_for(), of url is True
         :param update: dict, response.update(update), if response - dict
+        :param in_resources: list, custom resource info, default - ['methods', 'schema', 'url']
         """
         if url_params is None:
             url_params = {}
@@ -160,6 +162,7 @@ class ResourceMarker(dict):
             url=url,
             url_params=url_params,
             update=update,
+            in_resources=in_resources,
         )
 
 
