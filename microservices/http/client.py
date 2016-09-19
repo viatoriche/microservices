@@ -83,7 +83,7 @@ class _requests_method(object):
         data = kwargs.pop('data', None)
         fragment = kwargs.pop('fragment', '')
         params = kwargs.pop('params', '')
-        keep_blank_values = kwargs.pop('keep_blank_values', True)
+        keep_blank_values = kwargs.pop('keep_blank_values', None)
         timeout = kwargs.pop('timeout', 60)
         resource = self.build_resource(resources)
         if data is not None:
@@ -125,7 +125,7 @@ class Client(object):
     to_none_statuses = (404,)
 
     def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True,
-                 logger=None, name=None):
+                 logger=None, name=None, keep_blank_values=True):
         """Create a client
 
         :param endpoint: str, ex. http://localhost:5000 or http://localhost:5000/api/
@@ -154,9 +154,10 @@ class Client(object):
         self.close_slash = close_slash
         parsed_url = urlparse.urlparse(endpoint)
         endpoint = self.get_endpoint_from_parsed_url(parsed_url)
+        self.keep_blank_values = keep_blank_values
         self.endpoint = endpoint
         self.path = parsed_url.path
-        self.query = urlparse.parse_qs(parsed_url.query)
+        self.query = urlparse.parse_qs(parsed_url.query, keep_blank_values=self.keep_blank_values)
         self.fragment = parsed_url.fragment
         self.params = parsed_url.params
         self.name = name
@@ -172,7 +173,7 @@ class Client(object):
         url_list = [(lambda: x if e < 2 else '')() for e, x in enumerate(list(parsed_url))]
         return urlparse.urlunparse(url_list)
 
-    def url_for(self, resource='', query=None, params='', fragment='', keep_blank_values=True):
+    def url_for(self, resource='', query=None, params='', fragment='', keep_blank_values=None):
         """Generate url for resource
 
         Use endpoint for generation
@@ -205,6 +206,8 @@ class Client(object):
         if self.query:
             parsed_url[4] = urlencode(self.query, doseq=1)
         if query is not None:
+            if keep_blank_values is None:
+                keep_blank_values = self.keep_blank_values
             if isinstance(query, six.string_types):
                 query = urlparse.parse_qs(query, keep_blank_values=keep_blank_values)
             req_query = dict(self.query)
