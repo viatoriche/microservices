@@ -83,11 +83,13 @@ class _requests_method(object):
         data = kwargs.pop('data', None)
         fragment = kwargs.pop('fragment', '')
         params = kwargs.pop('params', '')
+        keep_blank_values = kwargs.pop('keep_blank_values', True)
         timeout = kwargs.pop('timeout', 60)
         resource = self.build_resource(resources)
         if data is not None:
             kwargs['json'] = data
-        url = self.client.url_for(resource, query, params=params, fragment=fragment)
+        url = self.client.url_for(resource, query, params=params, fragment=fragment,
+                                  keep_blank_values=keep_blank_values)
         self.logger.info('Request %s for %s', self.method, url)
         response = requests.request(self.method, url, timeout=timeout, **kwargs)
         return self.client.handle_response(response, response_key=response_key)
@@ -170,7 +172,7 @@ class Client(object):
         url_list = [(lambda: x if e < 2 else '')() for e, x in enumerate(list(parsed_url))]
         return urlparse.urlunparse(url_list)
 
-    def url_for(self, resource='', query=None, params='', fragment=''):
+    def url_for(self, resource='', query=None, params='', fragment='', keep_blank_values=True):
         """Generate url for resource
 
         Use endpoint for generation
@@ -204,7 +206,7 @@ class Client(object):
             parsed_url[4] = urlencode(self.query, doseq=1)
         if query is not None:
             if isinstance(query, six.string_types):
-                query = urlparse.parse_qs(query)
+                query = urlparse.parse_qs(query, keep_blank_values=keep_blank_values)
             req_query = dict(self.query)
             req_query.update(query)
             req_query = urlencode(req_query, doseq=1)
