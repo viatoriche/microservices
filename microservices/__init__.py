@@ -1,2 +1,1 @@
-def get_version():
-    return '0.9.0'
+from microservices.version import get_version

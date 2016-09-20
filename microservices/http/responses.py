@@ -1,4 +1,4 @@
-from flask.ext.api.response import APIResponse
+from flask_api.response import APIResponse
 
 
 class MicroserviceResponse(APIResponse):

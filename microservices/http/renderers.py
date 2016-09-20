@@ -1,16 +1,25 @@
 import json
 
+
 from flask import request
-from flask.ext.api.renderers import JSONRenderer, BrowsableAPIRenderer
+from flask_api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
 from flask import url_for
 from werkzeug.routing import BuildError
+from microservices.utils import get_logger
+import six
 
+logger = get_logger('Microservices renderers')
 
 class MicroserviceRendererMixin(object):
-    def pre_render(self, data, media_type, **options):
+    def pre_render(self, data, media_type, browser=False, **options):
 
-        rule = request.url_rule.rule
+        rule = None
+        url_rule = request.url_rule
+        if url_rule is not None:
+            rule = url_rule.rule
+        if rule is None:
+            return data
 
         app = options.get('app', None)
 
@@ -23,6 +32,8 @@ class MicroserviceRendererMixin(object):
             return data
 
         schema = resource.schema
+        if browser:
+            schema = schema['browser']
 
         ignore_for_methods = schema.get('ignore_for_methods', [])
 
@@ -71,9 +82,13 @@ class MicroserviceRendererMixin(object):
 
         def url_resource(resource):
             url = resource.url
+            if url is None:
+                return url
+            if not url:
+                return None
             if callable(url):
                 return url(resource)
-            if isinstance(url, basestring):
+            if isinstance(url, six.string_types):
                 return url
             params = resource.get('url_params', {})
             params['_external'] = params.get('_external', True)
@@ -89,20 +104,20 @@ class MicroserviceRendererMixin(object):
         resources_name = schema.get('resources', None)
         if resources_name is not None:
             resources = {}
-            for app_resource in [
+            for resource in [
                     value for value in app.resources.values()
                     if value.in_resources is not None and value.rule != resource.rule
                 ]:
-                if 'url' in app_resource:
-                    if app_resource.url:
-                        url = url_resource(app_resource)
+                if 'url' in resource:
+                    if resource.url:
+                        url = url_resource(resource)
                         if url is not None:
-                            app_resource.url = url
+                            resource.url = url
                         else:
-                            del app_resource.url
-                resources[app_resource.rule] = {
-                    k: app_resource[k]
-                    for k in app_resource.in_resources if k in app_resource
+                            del resource.url
+                resources[resource.rule] = {
+                    k: resource[k]
+                    for k in resource.in_resources if k in resource
                 }
             if resources:
                 response[resources_name] = resources
@@ -131,13 +146,21 @@ class MicroserviceJSONRenderer(JSONRenderer, MicroserviceRendererMixin):
             indent = None
         # Indent may be set explicitly, eg when rendered by the browsable API.
         indent = options.get('indent', indent)
-        return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent, encoding=self.charset)
+        if six.PY2:
+            return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent, encoding=self.charset)
+        else:
+            return json.dumps(data, cls=JSONEncoder, ensure_ascii=False, indent=indent)
 
 
 class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendererMixin):
     max_length = 1000000
 
     def render(self, data, *args, **options):
-        data = self.pre_render(data, *args, **options)
-        result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
+        data = self.pre_render(data, browser=True, *args, **options)
+        try:
+            result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
+        except Exception as e:
+            logger.exception(e)
+            return data
+
         return result[:self.max_length]

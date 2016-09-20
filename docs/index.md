@@ -1,5 +1,3 @@
-**Status**: lib is under active development.
-
 # [Microservices](https://pypi.python.org/pypi/microservices/)
 
 Build microservices and client easily.
@@ -8,26 +6,21 @@ HTTP service based on [Browsable Web APIs for Flask](http://www.flaskapi.org)
 
 HTTP client based on [requests](http://docs.python-requests.org/en/master/)
 
-Queues service and client based on [kombu](https://github.com/celery/kombu)
-
 ---
 
 ## Overview
 
 [Microservices](https://pypi.python.org/pypi/microservices/) library provides you with helpers to create microservices and client apps.
 
-See full documentation [here](http://microservices.readthedocs.io/)
-
 It is currently a work in progress, but the fundamental functionality is already in place, so you can already start building your services with it. If you want to start using Microservices right now, go ahead and do so, but be sure to follow the release notes of new versions carefully.
 
-HTTP implementation:
-![Screenshot](docs/screenshot.png)
+![Screenshot](screenshot.png)
 
 ## Roadmap
 
 Coming additions in version 1.0:
 
-* ~~SQS, AMQP and other transport protocols for microservices API.~~
+* SQS, AMQP and other transport protocols for microservices API.
 * Full documentation
 * Classes for building services with microservices context.
 
@@ -41,9 +34,7 @@ Install using `pip`.
 
     pip install microservices
 
-## Usage (http/rest)
-
-Import and initialize your application (http)
+Import and initialize your application.
 
     from microservices.http.service import Microservice
 
@@ -236,36 +227,6 @@ After run you will see:
 2016-06-16 14:11:11,014 - microservices.http.client - INFO - post: http://localhost:5000/second/one/2/
 2016-06-16 14:11:11,015 - requests.packages.urllib3.connectionpool - INFO - Starting new HTTP connection (1): localhost
 2016-06-16 14:11:11,016 - microservices client - INFO - {u'response': [u'one', 2, {u'test': u'tested'}]}
-```
-
-## Queues
-
-Microservices 0.18.0+ support working with queues based on [kombu](https://github.com/celery/kombu)
-
-Basic service usage:
-```
-from microservices.queues.service import Microservice
-
-# default uri: amqp:///
-app = Microservice()
-
-# queue name - "basic"
-@app.queue('basic')
-def basic_handler(payload, context):
-    print(payload)
-
-if __name__ == '__main__':
-    app.run(debug=True)
-```
-
-Basic client usage:
-```
-from microservices.queues.client import Client
-
-client = Client()
-
-queue = client.queue('basic')
-queue.publish({'data': 'Hello world'})
 ```
 
 ## Credits
