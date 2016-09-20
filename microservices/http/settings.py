@@ -18,7 +18,6 @@ class MicroserviceAPISettings(settings.APISettings):
     @property
     def DEFAULT_PARSERS(self):
         default = [
-            MicroserviceXMLParser,
             'flask_api.parsers.JSONParser',
             'flask_api.parsers.URLEncodedParser',
             'flask_api.parsers.MultiPartParser'

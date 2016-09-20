@@ -1,7 +1,10 @@
 import unittest
 import json
 from microservices.utils import set_logging
+import six
+
 set_logging()
+
 
 class TestHTTP(unittest.TestCase):
     def setUp(self):
@@ -10,15 +13,16 @@ class TestHTTP(unittest.TestCase):
     def tearDown(self):
         pass
 
+
 import requests
 
-class MockRequest(object):
 
+class MockRequest(object):
     def __init__(self, handler=lambda instance, *args, **kwargs: None, **kwargs):
         self.response = requests.Response()
         self.handler = handler
 
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
             setattr(self.response, k, v)
 
     def handle(self, *args, **kwargs):
@@ -28,13 +32,14 @@ class MockRequest(object):
         self.handle(*args, **kwargs)
         return self.response
 
+
 def patch_requests(request):
     requests.request = request
 
-class TestService(TestHTTP):
 
+class TestService(TestHTTP):
     def test_service(self):
-        import service
+        from microservices.http import service
 
         microservice = service.Microservice(__name__)
         microservice.config['TESTING'] = True
@@ -51,7 +56,7 @@ class TestService(TestHTTP):
             from flask import request
 
             if request.method == 'GET':
-                return {'test': 'tested'}
+                return {u'test': u'tested'}
 
         @microservice.route(
             '/test',
@@ -63,17 +68,17 @@ class TestService(TestHTTP):
             from flask import request
 
             if request.method == 'GET':
-                return ['tested']
+                return [u'tested']
 
         resp = app.get('/')
-        data = resp.data
+        data = resp.get_data(as_text=True)
 
         data = json.loads(data)
 
         self.assertEqual(data['test'], 'tested')
 
-class TestClient(unittest.TestCase):
 
+class TestClient(unittest.TestCase):
     def test_client(self):
         from microservices.http.client import Client, ResponseError
 
@@ -86,7 +91,7 @@ class TestClient(unittest.TestCase):
             self.assertEqual(url, valid_url)
             self.assertEqual(kwargs.get('json', None), valid_json)
 
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=200))
 
         client = Client('http://user:password@endpoint:8000/test/1')
         response = client.get()
@@ -118,31 +123,40 @@ class TestClient(unittest.TestCase):
         jopa1 = jopa.resource('1')
         jopa1.post('2', '3', query={'test': 'tested'}, key='response', data=valid_json)
 
-        client = Client('http://endpoint/', ok_statuses=(200, 202, ), to_none_statuses=(404, ))
+        client = Client('http://endpoint/', ok_statuses=(200, 202,), to_none_statuses=(404,))
         valid_url = 'http://endpoint/'
         valid_json = None
         valid_method = 'get'
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=404))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=404))
         client.get(key='response')
         client.get(key='response_no')
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=200))
         client.get(key='response')
         self.assertRaises(ResponseError, client.get, key='response_no')
-        patch_requests(MockRequest(handler=test_request, _content='{"response": "tested"}', status_code=500))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": "tested"}', status_code=500))
         self.assertRaises(ResponseError, client.get, key='response')
 
-        patch_requests(MockRequest(handler=test_request, _content='{"response": ""}', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'{"response": ""}', status_code=200))
         response = client.get(key='response')
         self.assertEqual(response, None)
-
 
         client = Client('http://endpoint/', empty_to_none=False)
         response = client.get(key='response')
         self.assertEqual(response, "")
 
-        patch_requests(MockRequest(handler=test_request, _content='bad', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'bad', status_code=200))
         self.assertRaises(ResponseError, client.get, key='response')
 
-        patch_requests(MockRequest(handler=test_request, _content='["tested"]', status_code=200))
+        patch_requests(MockRequest(handler=test_request, _content=b'["tested"]', status_code=200))
         response = client.get()
         self.assertEqual(response, ['tested'])
+
+        from microservices.utils import get_logger
+
+        logger = get_logger('test', 'jopa')
+
+        self.assertEqual(logger.name, 'jopa.test')
+
+        logger = get_logger('test', 'jopa', '_')
+
+        self.assertEqual(logger.name, 'jopa_test')

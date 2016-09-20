@@ -1,5 +1,13 @@
 import collections
 import six
+import datetime
+import time
+
+try:
+    import gevent
+    use_gevent = True
+except ImportError:
+    use_gevent = False
 
 def get_template_source(jinja_env, template_name):
     return jinja_env.loader.get_source(jinja_env, template_name)[0]
@@ -22,9 +30,11 @@ def set_logging(level='DEBUG', log_format='%(asctime)s - %(name)s - %(levelname)
     )
 
 
-def get_logger(name=__name__):
+def get_logger(name=__name__, prefix='', delimiter=''):
     import logging
-    return logging.getLogger(name)
+    if prefix and not delimiter:
+        delimiter = '.'
+    return logging.getLogger('{}{}{}'.format(prefix, delimiter, name))
 
 
 def dict_update(d, u):
@@ -42,5 +52,39 @@ def dict_update(d, u):
             d[k] = u[k]
     return d
 
+
 def is_iterable(obj):
     return isinstance(obj, collections.Iterable)
+
+
+class GeventSwitch(object):
+    """Smart switch helper for best perfomance"""
+
+    def __init__(self, max_wait=0.1):
+        self.last_switch = None
+        self.max_wait = max_wait
+
+    def __call__(self, *args, **kwargs):
+        if use_gevent:
+            now = datetime.datetime.now()
+            if self.last_switch is None:
+                self.last_switch = now
+            delta = now - self.last_switch
+            if delta.total_seconds() >= self.max_wait:
+                self.last_switch = now
+                gevent.idle()
+
+class GeventSleep(object):
+    """Smart switch helper for best perfomance"""
+
+    def __call__(self, seconds=None):
+        if seconds is None:
+            return
+
+        if use_gevent:
+            gevent.sleep(seconds)
+        else:
+            time.sleep(seconds)
+
+gevent_switch = GeventSwitch()
+gevent_sleep = GeventSleep()
