@@ -19,7 +19,7 @@ You can add route the same way like in flask-api
 ```
 @app.route('/')
 def hello_world():
-    return 'Hello world'
+    return 'Hello, world'
 ```
 
 And run it in debug mode:
@@ -65,7 +65,7 @@ from microservices.http.resources import ResourceMarker
     resource=ResourceMarker(),
 )
 def hello_world():
-    return 'Hello world'
+    return 'Hello, world'
 ```
 
 After page reloading you will see this:
@@ -80,7 +80,7 @@ As you can see, this page contains some additional information:
 * headers
 * response, of course
 
-Everything is fine and dict 'response' field contains our "hello world" string.
+Everything is fine and dict 'response' field contains our "Hello, world" string.
 This is default behavior.
 
 Let's change it.
@@ -99,34 +99,27 @@ Now reload our API page.
 
 ![http_3](http/3.png)
 
-New key "resource_created" just appeared in the response. If you try reload page again, datetime will
-not changed. This is static information for resource.
+New key "resource_created" just appeared in the response. If you try to reload page again, datetime will
+not be changed - it is immutable `resource` attribute.
 
 Note:
 > status, resource, methods, status_code, headers 1 in browser, if you
 > run curl or another http client, not browser, you will see only "response" and "update"
 > dictionary, like this:
 > ```
-> {"response": "Hello world", "resource_created": "2016-06-17T18:49:36.782267"}
+> {"response": "Hello, world", "resource_created": "2016-06-17T18:49:36.782267"}
 > ```
 
 ## ResourceSchema
 
-Ok, let's do more customizations! And use ResourceSchema
+Ok, it's time to add some more customizations using ResourceSchema.
 
-Importing `ResourceSchema` from `microservices.http.resources`
+`ResourceSchema` can be imported from `microservices.http.resources`
 ```
 from microservices.http.resources import ResourceMarker, ResourceSchema
 ```
 
-And change something, ex. response name
-```
-    schema=ResourceSchema(
-        response='result',
-    )
-```
-
-Let's see
+For example, we can change response name
 ```
 resource=ResourceMarker(
     update={
@@ -138,9 +131,11 @@ resource=ResourceMarker(
 )
 ```
 
+Response: 
+
 ![http_4](http/4.png)
 
-Was `"respone": "Hello world"` and now `"result": "Hello world"`
+`"response": "Hello, world"` => `"result": "Hello, world"`
 
 Want a more? OK!
 
@@ -148,7 +143,7 @@ If your response is a dict, by default response will be updated from your respon
 
 ```
 def hello_world():
-    return {'hello': 'Hello world'}
+    return {'hello': 'Hello, world'}
 ```
 
 ![http_5](http/5.png)
@@ -170,7 +165,7 @@ resource=ResourceMarker(
 And you will see:
 ```
 "result": {
-    "hello": "Hello world"
+    "hello": "Hello, world"
 },
 ```
 
@@ -210,15 +205,13 @@ Was `status_code` - now - `status`
 In real client you will see:
 
 ```
-{"status": 200, "result": {"hello": "Hello world"}, "resource_created": "2016-06-20T14:02:50.684756"}
+{"status": 200, "result": {"hello": "Hello, world"}, "resource_created": "2016-06-20T14:02:50.684756"}
 ```
 
 ## Settings
 
-If you want use your custom ResourceSchema everywhere, you can change default
-settings.
-
-It is easy:
+If you want to use your custom ResourceSchema everywhere, you can change default
+settings:
 
 ```
 app.config['SCHEMA'] = ResourceSchema(
@@ -260,22 +253,21 @@ def one_two_three(one, two, three):
     return response
 ```
 
-Let's open in browser [http://localhost:5000/1/2/3/](http://localhost:5000/1/2/3/)
+Open in browser [http://localhost:5000/1/2/3/](http://localhost:5000/1/2/3/)
 
 ![http_8](http/8.png)
 
-In response added field - `resources`
+Response now have one new field called `resources`
 
-This is a information about all resources in Microservice.
+It's an information about all available resources in Microservice instance.
 You can see `url` (clickable), `methods` and `schema`
 
-If you open [http://localhost:5000](http://localhost:5000)
-You will see information about resource `"/<string:one>/<string:two>/<string:three>/"`
+If you open [http://localhost:5000](http://localhost:5000), there would be information about resource `"/<string:one>/<string:two>/<string:three>/"`
 
-Where `url`? Not found, because microservice don't know how to create url dynamically,
-but you know, and you can say microservice how to create url
+The `url` field gone missing because microservice don't know how to create url dynamically,
+but you know.
 
-Let's do it
+So, it would be a good idea to tell microservice how to build url.
 ```
 @app.route(
     '/<string:one>/<string:two>/<string:three>/',
@@ -310,29 +302,27 @@ and run it `python hello_world_client.py`
 
 You will see
 ```
-{u'status': 200, u'result': {u'hello': u'Hello world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
+{u'status': 200, u'result': {u'hello': u'Hello, world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
 ```
 
-If you want get a result, u can use `key` in method get
+If you want to get a result, you can use `key` in method get
 
 ```
 response = hello_world.get(key='result')
 ```
 
-You will see
+You will get
 ```
-{u'hello': u'Hello world'}
+{u'hello': u'Hello, world'}
 ```
 
-What, if key not found?
+What if there is no such a key?
 
 ```
 response = hello_world.get(key='bad_key')
 ```
 
-Will generated an exception `microservices.http.client.ResponseError`
-
-Ex.
+...`microservices.http.client.ResponseError` exception would be thrown:
 ```
 Traceback (most recent call last):
   File "/home/viator/coding/code/microservices/examples/http/hello_world_client.py", line 5, in <module>
@@ -364,25 +354,21 @@ except ResponseError as error:
 
 Answer:
 ```
-Data: {u'status': 200, u'result': {u'hello': u'Hello world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
+Data: {u'status': 200, u'result': {u'hello': u'Hello, world'}, u'resource_created': u'2016-06-20T17:51:22.358575'}
 Status code: 200
 Description: Response key not found!
-Content: {"status": 200, "result": {"hello": "Hello world"}, "resource_created": "2016-06-20T17:51:22.358575"}
+Content: {"status": 200, "result": {"hello": "Hello, world"}, "resource_created": "2016-06-20T17:51:22.358575"}
 ```
 
-You can use ResponseError in your code for easy handling errors
+What Client can do as yet? Well, http methods - GET/POST/PUT/PATCH/DELETE/etc...
 
-What can the Client yet?
+Here's example for the POST method
 
-Any http methods, like a post, get, delete, patch, put etc...
-
-Let's test a POST method
-
-We can create a new resource from Client
+We can create a new resource from a Client:
 ```
 one_two_three = hello_world.resource('one', 'two', 'three')
 ```
-Where `'one', 'two', 'three'` => `http://localhost:5000/one/two/three/`
+`'one', 'two', 'three'` => `http://localhost:5000/one/two/three/`
 
 Let's see how it works:
 
@@ -400,13 +386,13 @@ Result:
 {u'one': u'one', u'data': {u'post': u'test'}, u'three': u'three', u'two': u'two'}
 ```
 
-You can write your Client class, where override method `handle_response` for customization
+You can write your own Client class and override method `handle_response` for specific purposes.
 
 ## Production
 
-Microservice app - is a fully WSGI application, you can use it with any wsgi servers.
+Microservice app is a fully WSGI application, so you can use it with any of wsgi servers.
 
-Microservices library provide you runners for help deployment.
+Library also provide you with runners to simplify deployment.
 
 ### Gevent
 
@@ -422,7 +408,7 @@ gevent_run(microservice)
 
 ### Tornado
 
-Single server and use gevent for asynchronizing
+Single server with gevent for async duties
 
 ```
 from microservices.http.runners import tornado_run
@@ -434,7 +420,7 @@ set_logging()
 tornado_run(microservice, use_gevent=True)
 ```
 
-Many servers in one process and use gevent for asynchronizing
+Multiple servers in one process using gevent for async
 
 ```
 from microservices.http.runners import tornado_combiner

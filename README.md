@@ -152,13 +152,13 @@ def second_params_two(test, two):
 
 @microservice.route(
     '/',
-    endpoint='Hello world!',
+    endpoint='Hello, world!',
     methods=['GET', 'POST'],
     resource=ResourceMarker(),
 )
 def hello():
     """
-    Hello world resource, testing main page
+    Hello, world resource, testing main page
 
     * GET: return POST something for hello
     * POST: return request data
@@ -212,7 +212,7 @@ logger.info(one_two_resource.get(key='response'))
 logger.info(one_two_resource.post(data={'test': 'tested'}))
 ```
 
-After running it you will see:
+Result:
 
 ```
 2016-06-16 14:11:10,997 - microservices.http.client - INFO - get: http://localhost:5000/
@@ -268,7 +268,7 @@ from microservices.queues.client import Client
 client = Client()
 
 queue = client.queue('basic')
-queue.publish({'data': 'Hello world'})
+queue.publish({'data': 'Hello, world'})
 ```
 
 ## Credits

@@ -15,7 +15,7 @@ def hello_world(data, context):
 client = Client()
 client.declare_exchange('input', queues=[('hello_world', 'world')])
 hello_world_e = client.exchange('input', routing_key='world')
-hello_world_e.publish('Hello world!')
+hello_world_e.publish('Hello, world!')
 hello_world_e.publish('2')
 hello_world_e.publish('3')
 

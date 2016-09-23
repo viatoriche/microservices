@@ -25,7 +25,7 @@ app.config['SCHEMA'] = ResourceSchema(
     ),
 )
 def hello_world():
-    return {'hello': 'Hello world'}
+    return {'hello': 'Hello, world'}
 
 @app.route(
     '/<string:one>/<string:two>/<string:three>/',
