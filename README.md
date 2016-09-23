@@ -4,11 +4,11 @@
 
 Build microservices and client easily.
 
-HTTP service based on [Browsable Web APIs for Flask](http://www.flaskapi.org)
+HTTP service is based on the [Browsable Web APIs for Flask](http://www.flaskapi.org)
 
-HTTP client based on [requests](http://docs.python-requests.org/en/master/)
+HTTP client uses wonderful [requests](http://docs.python-requests.org/en/master/) lib 
 
-Queues service and client based on [kombu](https://github.com/celery/kombu)
+Queues service and client are both based on [kombu](https://github.com/celery/kombu)
 
 ---
 
@@ -16,20 +16,23 @@ Queues service and client based on [kombu](https://github.com/celery/kombu)
 
 [Microservices](https://pypi.python.org/pypi/microservices/) library provides you with helpers to create microservices and client apps.
 
-See full documentation [here](http://microservices.readthedocs.io/)
+See full documentation on [Read the Docs](http://microservices.readthedocs.io/)
 
-It is currently a work in progress, but the fundamental functionality is already in place, so you can already start building your services with it. If you want to start using Microservices right now, go ahead and do so, but be sure to follow the release notes of new versions carefully.
+Library is currently a work in progress, but all essential functions are already in place, 
+so you can already start building your services with it. 
+If you want to start using Microservices right now, go ahead and do so, but be sure to follow the release notes of 
+new versions carefully.
 
 HTTP implementation:
 ![Screenshot](docs/screenshot.png)
 
 ## Roadmap
 
-Coming additions in version 1.0:
+Coming features in version 1.0:
 
 * ~~SQS, AMQP and other transport protocols for microservices API.~~
 * Full documentation
-* Classes for building services with microservices context.
+* Classes for services building with microservices context.
 
 ## Installation
 
@@ -51,7 +54,7 @@ Import and initialize your application (http)
 
 ## Responses
 
-Return any valid response object as normal, or return a `list` or `dict`.
+Return any valid response object as normal, or return a `list` or a `dict`.
 
     @app.route(
         '/example/',
@@ -149,13 +152,13 @@ def second_params_two(test, two):
 
 @microservice.route(
     '/',
-    endpoint='Hello world!',
+    endpoint='Hello, world!',
     methods=['GET', 'POST'],
     resource=ResourceMarker(),
 )
 def hello():
     """
-    Hello world resource, testing main page
+    Hello, world resource, testing main page
 
     * GET: return POST something for hello
     * POST: return request data
@@ -170,17 +173,17 @@ if __name__ == "__main__":
 
 ```
 
-Now you can run the microservice:
+Now you can run your microservice:
 
     $ python ./example.py
      * Running on http://127.0.0.1:5000/
      * Restarting with reloader
 
 And open <http://127.0.0.1:5000/>.
-You can then navigate between notes, and make `GET`, `PUT`, `POST`
+You can then navigate between the notes and run `GET`, `PUT`, `POST`
 and `DELETE` API requests.
 
-Client for app:
+Client app example:
 
 ```
 from microservices.http.client import Client
@@ -209,7 +212,7 @@ logger.info(one_two_resource.get(key='response'))
 logger.info(one_two_resource.post(data={'test': 'tested'}))
 ```
 
-After run you will see:
+Result:
 
 ```
 2016-06-16 14:11:10,997 - microservices.http.client - INFO - get: http://localhost:5000/
@@ -242,7 +245,7 @@ After run you will see:
 
 Microservices 0.18.0+ support working with queues based on [kombu](https://github.com/celery/kombu)
 
-Basic service usage:
+Example of service usage:
 ```
 from microservices.queues.service import Microservice
 
@@ -258,14 +261,14 @@ if __name__ == '__main__':
     app.run(debug=True)
 ```
 
-Basic client usage:
+Example of client usage:
 ```
 from microservices.queues.client import Client
 
 client = Client()
 
 queue = client.queue('basic')
-queue.publish({'data': 'Hello world'})
+queue.publish({'data': 'Hello, world'})
 ```
 
 ## Credits

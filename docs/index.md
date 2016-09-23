@@ -140,13 +140,13 @@ def second_params_two(test, two):
 
 @microservice.route(
     '/',
-    endpoint='Hello world!',
+    endpoint='Hello, world!',
     methods=['GET', 'POST'],
     resource=ResourceMarker(),
 )
 def hello():
     """
-    Hello world resource, testing main page
+    Hello, world resource, testing main page
 
     * GET: return POST something for hello
     * POST: return request data

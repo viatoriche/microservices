@@ -55,23 +55,23 @@ Let's publish something to basic_queue
 
 Go to: [http://localhost:15672/#/queues/%2F/basic_queue]()
 
-And publish message "Hello world!"
+And publish message "Hello, world!"
 
 ![queue_2](queues/2.png)
 
 In console output you will see:
-`Hello world!`
+`Hello, world!`
 
 Good. Let's send json.
 
 Use property `content_type` with value `application/json`
 
-Send json string: `{"message": "Hello world!"}`
+Send json string: `{"message": "Hello, world!"}`
 
 ![queue_3](queues/3.png)
 
 In console output you will see:
-`{'message': 'Hello world!'}` - repr for python dict
+`{'message': 'Hello, world!'}` - repr for python dict
 
 ## Client
 
@@ -87,13 +87,13 @@ client = Client()
 
 q = client.queue('basic_queue')
 
-q.publish({"message": "Hello world!"})
+q.publish({"message": "Hello, world!"})
 ```
 
 and run it `python hello_world_client.py`
 
 In service console you will see
-`{'message': 'Hello world!'}`
+`{'message': 'Hello, world!'}`
 
 ## Production
 
