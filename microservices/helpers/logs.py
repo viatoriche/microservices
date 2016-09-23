@@ -21,9 +21,9 @@ class InstanceLogger(object):
     >>>    def __str__(self)::
     >>>        return 'test class'
     >>>instance_logger = InstanceLogger(TestClass(), logger)
-    >>>instance_logger.info('Hello world!')
+    >>>instance_logger.info('Hello, world!')
     you will see:
-        'test class - Hello world!'
+        'test class - Hello, world!'
 
     Instance Logger use method __str__
     """
