@@ -1,6 +1,5 @@
 from kombu import Connection
-from kombu.pools import connections
-from kombu import Exchange, Queue
+from kombu import Exchange, Queue, pools
 from microservices.utils import get_logger
 from microservices.helpers.logs import InstanceLogger
 import six
@@ -77,7 +76,7 @@ class Client(object):
 
     default_connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///', name=None, logger=None):
+    def __init__(self, connection='amqp:///', name=None, logger=None, limit=None):
         """Initialization of Client instance
 
         :param connection: connection for broker
@@ -97,6 +96,11 @@ class Client(object):
 
         self.name = name
         self.logger.debug('Client built for connection: %s', self.connection.as_uri())
+
+        if limit is None:
+            # Set limit as global kombu limit.
+            limit = pools.get_limit()
+        self.limit = limit
 
     def __str__(self):
         return self.name
@@ -135,6 +139,7 @@ class Client(object):
         if queues is None:
             queues = []
 
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             exchange = Exchange(name, type=type, channel=conn, **options)
             exchange.declare()
@@ -152,6 +157,7 @@ class Client(object):
         :param name: name of exchange
         :type name: str
         """
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             exchange = self.exchanges.pop(name, Exchange(name, channel=conn))
             exchange.delete()
@@ -163,6 +169,7 @@ class Client(object):
         :param name: name of queue
         :type name: str
         """
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             Queue(name=name, channel=conn).purge()
             self.logger.debug('Queue "%s" was purged', name)
@@ -173,6 +180,7 @@ class Client(object):
         :param name: name of queue
         :type name: str
         """
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             Queue(name=name, channel=conn).delete()
             self.logger.debug('Queue "%s" was deleted', name)
@@ -208,6 +216,7 @@ class Client(object):
         :type message: any serializable object
         :param properties: additional properties for Producer.publish()
         """
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             producer = conn.Producer()
             result = producer.publish(message, exchange=self.exchanges[name], routing_key=routing_key, **properties)
@@ -225,6 +234,7 @@ class Client(object):
         :type message: any serializable object
         :param properties: additional properties for SimpleQueue
         """
+        connections = pools.Connections(self.limit)
         with connections[self.connection].acquire() as conn:
             simple_queue = conn.SimpleQueue(name, **properties)
             simple_queue.put(message)
