@@ -101,6 +101,8 @@ class Client(object):
             # Set limit as global kombu limit.
             limit = pools.get_limit()
         self.limit = limit
+        self.connections = pools.Connections(self.limit)
+
 
     def __str__(self):
         return self.name
@@ -139,8 +141,7 @@ class Client(object):
         if queues is None:
             queues = []
 
-        connections = pools.Connections(self.limit)
-        with connections[self.connection].acquire() as conn:
+        with self.connections[self.connection].acquire() as conn:
             exchange = Exchange(name, type=type, channel=conn, **options)
             exchange.declare()
             self.exchanges[name] = exchange
@@ -157,8 +158,7 @@ class Client(object):
         :param name: name of exchange
         :type name: str
         """
-        connections = pools.Connections(self.limit)
-        with connections[self.connection].acquire() as conn:
+        with self.connections[self.connection].acquire() as conn:
             exchange = self.exchanges.pop(name, Exchange(name, channel=conn))
             exchange.delete()
             self.logger.debug('Exchange "%s" was deleted', name)
@@ -180,8 +180,7 @@ class Client(object):
         :param name: name of queue
         :type name: str
         """
-        connections = pools.Connections(self.limit)
-        with connections[self.connection].acquire() as conn:
+        with self.connections[self.connection].acquire() as conn:
             Queue(name=name, channel=conn).delete()
             self.logger.debug('Queue "%s" was deleted', name)
 
@@ -216,8 +215,7 @@ class Client(object):
         :type message: any serializable object
         :param properties: additional properties for Producer.publish()
         """
-        connections = pools.Connections(self.limit)
-        with connections[self.connection].acquire() as conn:
+        with self.connections[self.connection].acquire() as conn:
             producer = conn.Producer()
             result = producer.publish(message, exchange=self.exchanges[name], routing_key=routing_key, **properties)
             self.logger.info('Message (len: %s) was published to exchange "%s" with routing_key "%s"', len(message),
@@ -234,8 +232,7 @@ class Client(object):
         :type message: any serializable object
         :param properties: additional properties for SimpleQueue
         """
-        connections = pools.Connections(self.limit)
-        with connections[self.connection].acquire() as conn:
+        with self.connections[self.connection].acquire() as conn:
             simple_queue = conn.SimpleQueue(name, **properties)
             simple_queue.put(message)
             simple_queue.close()
