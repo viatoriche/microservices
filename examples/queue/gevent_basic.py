@@ -14,6 +14,7 @@ from microservices.queues.client import Client
 app1 = Microservice()
 app2 = Microservice()
 app3 = Microservice()
+app4 = Microservice()
 
 @app1.queue('gevent_basic1')
 @app2.queue('gevent_basic2')
@@ -42,5 +43,13 @@ app2.stop()
 app3.stop()
 while not app1.stopped and not app2.stopped and not app3.stopped:
     gevent.sleep(0.1)
+
+import signal
+
+def stop(*args, **kwargs):
+    app4.stop()
+
+signal.signal(signal.SIGINT, stop)
+gevent_run(app4, start=True, monkey_patch=False, debug=True)
 
 logger.info('End...')
