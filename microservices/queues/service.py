@@ -159,10 +159,15 @@ class Microservice(object):
                 break
             except Exception as e:
                 self.logger.exception(e)
+
+    def revive(self):
         for i, consumer in enumerate(self.consumers):
             self.logger.debug('Try revive consumer: %s', i)
             consumer.channel = self.connection
-            consumer.revive(consumer.channel)
+            try:
+                consumer.revive(consumer.channel)
+            except Exception as e:
+                self.logger.exception(e)
 
     @property
     def stopped(self):
@@ -180,6 +185,12 @@ class Microservice(object):
                     if not self.connection.connected and not self._stop:
                         self.logger.error('Connection to mq has broken off. Try to reconnect')
                         self.connect()
+                        self.revive()
+                        return
+                    elif not self._stop:
+                        self.logger.exception(e)
+                        self.logger.error('Unknown error, try restart loop for fix it')
+                        self.revive()
                         return
                     else:
                         self.logger.exception(e)
