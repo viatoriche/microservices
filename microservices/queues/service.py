@@ -169,8 +169,8 @@ class Microservice(object):
         return self._stopped
 
     def drain_events(self, infinity=True):
-        while not self._stop:
-            with nested(*self.consumers):
+        with nested(*self.consumers):
+            while not self._stop:
                 try:
                     self.connection.drain_events(timeout=self.timeout)
                 except socket.timeout:
