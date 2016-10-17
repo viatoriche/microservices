@@ -33,12 +33,15 @@ class Rule(object):
 
     def callback(self, body, message):
         self.logger.info('Data (len: %s) received', len(body))
-        self.handler(body, HandlerContext(message, self))
-        if self.autoack:
-            try:
-                message.ack()
-            except MessageStateError as e:
-                self.logger.warning('ACK() was called in handler?')
+        try:
+            self.handler(body, HandlerContext(message, self))
+            if self.autoack:
+                try:
+                    message.ack()
+                except MessageStateError as e:
+                    self.logger.warning('ACK() was called in handler?')
+        except Exception as e:
+            self.logger.exception(e)
 
 
 class HandlerContext(object):
