@@ -153,18 +153,24 @@ class Microservice(object):
 
     def connect(self):
         """Try connect to mq"""
-        try:
-            self.connection.connect()
-        except Exception as e:
-            self.logger.exception(e)
+        while not self._stop:
+            try:
+                self.connection.connect()
+                break
+            except Exception as e:
+                self.logger.exception(e)
+        for i, consumer in enumerate(self.consumers):
+            self.logger.debug('Try revive consumer: %s', i)
+            consumer.channel = self.connection
+            consumer.revive(consumer.channel)
 
     @property
     def stopped(self):
         return self._stopped
 
     def drain_events(self, infinity=True):
-        with nested(*self.consumers):
-            while not self._stop:
+        while not self._stop:
+            with nested(*self.consumers):
                 try:
                     self.connection.drain_events(timeout=self.timeout)
                 except socket.timeout:
