@@ -35,3 +35,12 @@ for x in range(20):
     client.publish_to_queue('gevent_basic1', 'First')
     client.publish_to_queue('gevent_basic2', 'Second')
     client.publish_to_queue('gevent_basic3', 'Third')
+
+gevent.sleep(5)
+app1.stop()
+app2.stop()
+app3.stop()
+while not app1.stopped and not app2.stopped and not app3.stopped:
+    gevent.sleep(0.1)
+
+logger.info('End...')

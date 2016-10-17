@@ -14,15 +14,17 @@ _logger = get_logger(__name__)
 class Rule(object):
     """Rule"""
 
-    def __init__(self, name, handler, logger, **options):
+    def __init__(self, name, handler, logger, autoack=True, **options):
         """Initialization
 
         :param name: name of queue
         :param handler: handle for queue
+        :param autoack: if true, call message.ack()
         """
         self.handler = handler
         self.name = name
         self.options = options
+        self.autoack = autoack
         self.logger = InstanceLogger(self, logger)
         self._name = '<queue: {}>'.format(self.name)
 
@@ -32,10 +34,11 @@ class Rule(object):
     def callback(self, body, message):
         self.logger.info('Data (len: %s) received', len(body))
         self.handler(body, HandlerContext(message, self))
-        try:
-            message.ack()
-        except MessageStateError as e:
-            self.logger.warning('ACK() was called in handler?')
+        if self.autoack:
+            try:
+                message.ack()
+            except MessageStateError as e:
+                self.logger.warning('ACK() was called in handler?')
 
 
 class HandlerContext(object):
@@ -81,6 +84,8 @@ class Microservice(object):
             name = '<microservice: {}>'.format(self.connection.as_uri())
 
         self.name = name
+        self._stop = False
+        self._stopped = False
 
     def __str__(self):
         return self.name
@@ -104,7 +109,7 @@ class Microservice(object):
 
         return Connection(**connection)
 
-    def add_queue_rule(self, handler, name, **kwargs):
+    def add_queue_rule(self, handler, name, autoack=True, **kwargs):
         """Add queue rule to Microservice
 
         :param handler: function for handling messages
@@ -113,12 +118,21 @@ class Microservice(object):
         :type name: str
         """
 
-        rule = Rule(name, handler, self.logger, **kwargs)
+        rule = Rule(name, handler, self.logger, autoack=autoack, **kwargs)
         consumer = Consumer(self.connection, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
         self.consumers.append(consumer)
         self.logger.debug('Rule "%s" added!', rule.name)
 
-    def queue(self, name, **kwargs):
+    def _start(self):
+        self._stopped = False
+        self._stop = False
+
+    def stop(self):
+        self._stop = True
+        self.logger.info('Try to stop microservice draining events')
+        self.connection.release()
+
+    def queue(self, name, autoack=True, **kwargs):
         """Decorator for handler function
 
         >>>app = Microservice()
@@ -127,26 +141,47 @@ class Microservice(object):
         >>>def function(payload, context):
         >>>    pass
 
+        :param autoack: if True message.ack() after callback
         :param name: name of queue
         :type name: str
         """
 
         def decorator(f):
-            self.add_queue_rule(f, name, **kwargs)
+            self.add_queue_rule(f, name, autoack=autoack, **kwargs)
             return f
 
         return decorator
 
+    def connect(self):
+        """Try connect to mq"""
+        try:
+            self.connection.connect()
+        except Exception as e:
+            self.logger.exception(e)
+
+    @property
+    def stopped(self):
+        return self._stopped
+
     def drain_events(self, infinity=True):
         with nested(*self.consumers):
-            while True:
+            while not self._stop:
                 try:
                     self.connection.drain_events(timeout=self.timeout)
                 except socket.timeout:
                     if not infinity:
                         return
+                except OSError as e:
+                    if not self._stop:
+                        self.logger.exception(e)
                 except Exception as e:
-                    self.logger.exception(e)
+                    if not self.connection.connected and not self._stop:
+                        self.logger.error('Connection to mq has broken off. Try to reconnect')
+                        self.connect()
+                    else:
+                        self.logger.exception(e)
+        self._stopped = True
+        self.logger.info('Stopped draining events.')
 
     def run(self, debug=False):
         """Run microservice in loop, where handle connections
@@ -158,6 +193,7 @@ class Microservice(object):
             from microservices.utils import set_logging
 
             set_logging('DEBUG')
+        self._start()
         self.drain_events(infinity=True)
 
     def read(self, count=1):
