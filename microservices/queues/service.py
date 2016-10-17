@@ -180,6 +180,7 @@ class Microservice(object):
                     if not self.connection.connected and not self._stop:
                         self.logger.error('Connection to mq has broken off. Try to reconnect')
                         self.connect()
+                        return
                     else:
                         self.logger.exception(e)
         self._stopped = True
@@ -195,8 +196,12 @@ class Microservice(object):
             from microservices.utils import set_logging
 
             set_logging('DEBUG')
-        self._start()
-        self.drain_events(infinity=True)
+        def _run():
+            self._start()
+            self.drain_events(infinity=True)
+        while not self._stopped:
+            _run()
+
 
     def read(self, count=1):
         for x in range(count):
