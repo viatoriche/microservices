@@ -130,7 +130,6 @@ class Microservice(object):
     def stop(self):
         self._stop = True
         self.logger.info('Try to stop microservice draining events')
-        self.connection.release()
 
     def queue(self, name, autoack=True, **kwargs):
         """Decorator for handler function
@@ -171,9 +170,6 @@ class Microservice(object):
                 except socket.timeout:
                     if not infinity:
                         return
-                except OSError as e:
-                    if not self._stop:
-                        self.logger.exception(e)
                 except Exception as e:
                     if not self.connection.connected and not self._stop:
                         self.logger.error('Connection to mq has broken off. Try to reconnect')
