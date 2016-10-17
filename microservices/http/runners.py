@@ -46,6 +46,11 @@ def tornado_start():
     from tornado.ioloop import IOLoop
     IOLoop.instance().start()
 
+def tornado_stop():
+    """Just stop tornado ioloop"""
+    from tornado.ioloop import IOLoop
+    IOLoop.instance().stop()
+
 
 def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey_patch=None, Container=None,
                 Server=None, threadpool=None):

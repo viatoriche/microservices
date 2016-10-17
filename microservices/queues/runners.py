@@ -17,5 +17,5 @@ def gevent_run(app, monkey_patch=True, start=True, debug=False, **kwargs):
     gevent.spawn(app.run, debug=debug, **kwargs)
 
     if start:
-        while True:
+        while not app.stopped:
             gevent.sleep(0.1)
