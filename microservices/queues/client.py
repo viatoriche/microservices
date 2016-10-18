@@ -230,7 +230,7 @@ class Client(object):
         :type name: str
         :param message: payload for publishing
         :type message: any serializable object
-        :param properties: additional properties for SimpleQueue
+        :param properties: additional properties for Producer publish
         """
         with self.connections[self.connection].acquire() as conn:
             producer = conn.Producer()
