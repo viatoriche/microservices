@@ -1,7 +1,6 @@
 import json
 
-
-from flask import request
+from flask import request, current_app
 from flask_api.renderers import JSONRenderer, BrowsableAPIRenderer
 from flask.json import JSONEncoder
 from flask import url_for
@@ -10,6 +9,7 @@ from microservices.utils import get_logger
 import six
 
 logger = get_logger('Microservices renderers')
+
 
 class MicroserviceRendererMixin(object):
     def pre_render(self, data, media_type, browser=False, **options):
@@ -21,10 +21,7 @@ class MicroserviceRendererMixin(object):
         if rule is None:
             return data
 
-        app = options.get('app', None)
-
-        if app is None:
-            return data
+        app = current_app
 
         if rule in app.resources:
             resource = app.resources[rule]
@@ -105,8 +102,8 @@ class MicroserviceRendererMixin(object):
         if resources_name is not None:
             resources = {}
             for resource in [
-                    value for value in app.resources.values()
-                    if value.in_resources is not None and value.rule != resource.rule
+                value for value in app.resources.values()
+                if value.in_resources is not None and value.rule != resource.rule
                 ]:
                 if 'url' in resource:
                     if resource.url:
@@ -118,7 +115,7 @@ class MicroserviceRendererMixin(object):
                 resources[resource.rule] = {
                     k: resource[k]
                     for k in resource.in_resources if k in resource
-                }
+                    }
             if resources:
                 response[resources_name] = resources
 
