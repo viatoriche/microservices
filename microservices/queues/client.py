@@ -233,7 +233,7 @@ class Client(object):
         :param properties: additional properties for SimpleQueue
         """
         with self.connections[self.connection].acquire() as conn:
-            simple_queue = conn.SimpleQueue(name, **properties)
-            simple_queue.put(message)
-            simple_queue.close()
+            producer = conn.Producer()
+            result = producer.publish(message, routing_key=name, **properties)
             self.logger.info('Message (len: %s) was published to queue "%s"', len(message), name)
+            return result
