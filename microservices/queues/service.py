@@ -10,6 +10,9 @@ from microservices.helpers.logs import InstanceLogger
 
 _logger = get_logger(__name__)
 
+class HandlerError(Exception):
+    pass
+
 
 @six.python_2_unicode_compatible
 class Rule(object):
@@ -36,13 +39,14 @@ class Rule(object):
         self.logger.info('Data (len: %s) received', len(body))
         try:
             self.handler(body, HandlerContext(message, self))
-            if self.autoack:
-                try:
-                    message.ack()
-                except MessageStateError as e:
-                    self.logger.warning('ACK() was called in handler?')
         except Exception as e:
             self.logger.exception(e)
+            raise HandlerError('Something happened in user handler')
+        if self.autoack:
+            try:
+                message.ack()
+            except MessageStateError as e:
+                self.logger.warning('ACK() was called in handler?')
 
 
 class HandlerContext(object):
@@ -198,11 +202,13 @@ class Microservice(object):
                         self.connect()
                         self.revive()
                         return
-                    elif not self._stop:
+                    elif not self._stop and not isinstance(e, HandlerError):
                         self.logger.exception(e)
-                        self.logger.error('Unknown error, try restart loop for fix it')
+                        self.logger.error('Something wrong! Try to restart the loop')
                         self.revive()
                         return
+                    elif isinstance(e, HandlerError):
+                        pass
                     else:
                         self.logger.exception(e)
         self._stopped = True
