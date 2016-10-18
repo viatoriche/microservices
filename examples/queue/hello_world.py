@@ -1,4 +1,5 @@
 import signal
+import gevent
 from microservices.utils import set_logging
 
 set_logging()
@@ -8,7 +9,7 @@ from microservices.queues.service import Microservice
 app = Microservice()
 
 
-@app.queue('basic_queue')
+@app.queue('basic_queue', prefetch_count=1)
 def hello_world(payload, context):
     print(payload)
 

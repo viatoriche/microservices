@@ -10,6 +10,7 @@ from microservices.helpers.logs import InstanceLogger
 
 _logger = get_logger(__name__)
 
+
 @six.python_2_unicode_compatible
 class Rule(object):
     """Rule"""
@@ -112,10 +113,13 @@ class Microservice(object):
 
         return Connection(**connection)
 
-    def add_queue_rule(self, handler, name, autoack=True, **kwargs):
+    def add_queue_rule(self, handler, name, autoack=True, prefetch_size=0, prefetch_count=0, **kwargs):
         """Add queue rule to Microservice
 
+        :param prefetch_count: count of messages for getting from mq
+        :param prefetch_size: size in bytes for getting data from mq
         :param handler: function for handling messages
+        :param autoack: if True message.ack() after callback
         :type handler: callable object
         :param name: name of queue
         :type name: str
@@ -123,6 +127,7 @@ class Microservice(object):
 
         rule = Rule(name, handler, self.logger, autoack=autoack, **kwargs)
         consumer = Consumer(self.connection, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
+        consumer.qos(prefetch_count=prefetch_count, prefetch_size=prefetch_size)
         self.consumers.append(consumer)
         self.logger.debug('Rule "%s" added!', rule.name)
 
@@ -134,7 +139,7 @@ class Microservice(object):
         self._stop = True
         self.logger.info('Try to stop microservice draining events')
 
-    def queue(self, name, autoack=True, **kwargs):
+    def queue(self, name, autoack=True, prefetch_size=0, prefetch_count=0, **kwargs):
         """Decorator for handler function
 
         >>>app = Microservice()
@@ -143,13 +148,16 @@ class Microservice(object):
         >>>def function(payload, context):
         >>>    pass
 
+        :param prefetch_count: count of messages for getting from mq
+        :param prefetch_size: size in bytes for getting data from mq
         :param autoack: if True message.ack() after callback
         :param name: name of queue
         :type name: str
         """
 
         def decorator(f):
-            self.add_queue_rule(f, name, autoack=autoack, **kwargs)
+            self.add_queue_rule(f, name, autoack=autoack, prefetch_size=prefetch_size, prefetch_count=prefetch_count,
+                                **kwargs)
             return f
 
         return decorator
@@ -210,12 +218,13 @@ class Microservice(object):
             from microservices.utils import set_logging
 
             set_logging('DEBUG')
+
         def _run():
             self._start()
             self.drain_events(infinity=True)
+
         while not self._stopped:
             _run()
-
 
     def read(self, count=1):
         for x in range(count):
