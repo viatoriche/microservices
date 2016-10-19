@@ -82,12 +82,14 @@ class GeventSwitch(object):
         self.sleep_seconds = sleep_seconds
         self._sleep = GeventSleep()
 
-    def __call__(self, immediate=False):
+    def __call__(self, immediate=False, sleep=None):
         if use_gevent:
             self._calls += 1
             if self._calls >= self.max_calls or immediate:
                 self._calls = 0
-                self._sleep(self.sleep_seconds)
+                if sleep is None:
+                    sleep = self.sleep_seconds
+                self._sleep(sleep)
 
 gevent_switch = GeventSwitch()
 gevent_sleep = GeventSleep()
