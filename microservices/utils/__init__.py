@@ -57,23 +57,6 @@ def is_iterable(obj):
     return isinstance(obj, collections.Iterable)
 
 
-class GeventSwitch(object):
-    """Smart switch helper for best perfomance"""
-
-    def __init__(self, max_wait=0.1):
-        self.last_switch = None
-        self.max_wait = max_wait
-
-    def __call__(self, *args, **kwargs):
-        if use_gevent:
-            now = datetime.datetime.now()
-            if self.last_switch is None:
-                self.last_switch = now
-            delta = now - self.last_switch
-            if delta.total_seconds() >= self.max_wait:
-                self.last_switch = now
-                gevent.idle()
-
 class GeventSleep(object):
     """Smart switch helper for best perfomance"""
 
@@ -85,6 +68,26 @@ class GeventSleep(object):
             gevent.sleep(seconds)
         else:
             time.sleep(seconds)
+
+class GeventSwitch(object):
+    """Smart switch helper for best perfomance"""
+
+    def __init__(self, max_calls=100, sleep_seconds=0):
+        """Gevent switcher
+
+        :param max_calls: count of call for switch
+        """
+        self._calls = 0
+        self.max_calls = max_calls
+        self.sleep_seconds = sleep_seconds
+        self._sleep = GeventSleep()
+
+    def __call__(self, immediate=False):
+        if use_gevent:
+            self._calls += 1
+            if self._calls >= self.max_calls or immediate:
+                self._calls = 0
+                self._sleep(self.sleep_seconds)
 
 gevent_switch = GeventSwitch()
 gevent_sleep = GeventSleep()
