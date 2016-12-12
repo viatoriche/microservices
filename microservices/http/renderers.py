@@ -158,6 +158,6 @@ class MicroserviceBrowsableAPIRenderer(BrowsableAPIRenderer, MicroserviceRendere
             result = super(MicroserviceBrowsableAPIRenderer, self).render(data, *args, **options)
         except Exception as e:
             logger.exception(e)
-            return data
+            return str(data)
 
         return result[:self.max_length]
