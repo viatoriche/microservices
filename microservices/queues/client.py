@@ -90,7 +90,8 @@ class Client(object):
             try:
                 name = '<client: {}>'.format(self.connection.as_uri())
             except:
-                name = '<client: {}>'.format(self.connection)
+                # Errors with filesystem transport
+                name = '<client: {}>'.format(self.connection.transport_cls)
 
         if logger is None:
             logger = get_logger(__name__)

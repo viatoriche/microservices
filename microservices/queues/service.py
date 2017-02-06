@@ -92,7 +92,8 @@ class Microservice(object):
             try:
                 name = '<microservice: {}>'.format(self.connection.as_uri())
             except:
-                name = '<microservice: {}>'.format(self.connection)
+                # Errors with filesystem transport
+                name = '<microservice: {}>'.format(self.connection.transport_cls)
 
         self.name = name
         self._stop = False
