@@ -99,7 +99,7 @@ class Client(object):
         self.logger = InstanceLogger(self, logger)
 
         self.name = name
-        self.logger.debug('Client built for connection: %s', self.connection.as_uri())
+        self.logger.debug('%s built', self.name)
 
         if limit is None:
             # Set limit as global kombu limit.
