@@ -89,7 +89,10 @@ class Microservice(object):
         self.consumers = []
 
         if name is None:
-            name = '<microservice: {}>'.format(self.connection.as_uri())
+            try:
+                name = '<microservice: {}>'.format(self.connection.as_uri())
+            except:
+                name = '<microservice: {}>'.format(self.connection)
 
         self.name = name
         self._stop = False
@@ -109,13 +112,13 @@ class Microservice(object):
         if not connection:
             connection = self.connection
 
-        if isinstance(connection, Connection):
-            return connection
-
         if isinstance(connection, str):
             connection = {'hostname': connection}
 
-        return Connection(**connection)
+        if isinstance(connection, dict):
+            connection = Connection(**connection)
+
+        return connection
 
     def add_queue_rule(self, handler, name, autoack=True, prefetch_size=0, prefetch_count=0, **kwargs):
         """Add queue rule to Microservice

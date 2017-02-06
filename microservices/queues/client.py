@@ -87,7 +87,10 @@ class Client(object):
         self.exchanges = {}
 
         if name is None:
-            name = '<client: {}>'.format(self.connection.as_uri())
+            try:
+                name = '<client: {}>'.format(self.connection.as_uri())
+            except:
+                name = '<client: {}>'.format(self.connection)
 
         if logger is None:
             logger = get_logger(__name__)
@@ -119,13 +122,13 @@ class Client(object):
         if not connection:
             connection = self.default_connection
 
-        if isinstance(connection, Connection):
-            return connection
-
         if isinstance(connection, str):
             connection = {'hostname': connection}
 
-        return Connection(**connection)
+        if isinstance(connection, dict):
+            connection = Connection(**connection)
+
+        return connection
 
     def declare_exchange(self, name, type='direct', queues=None, **options):
         """Create or update exchange
