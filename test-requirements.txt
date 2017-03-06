@@ -2,3 +2,4 @@ nose
 coverage
 flake8
 python-coveralls
+codeclimate-test-reporter
