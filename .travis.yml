@@ -11,4 +11,4 @@ install:
 # command to run tests
 script: ./runtests.sh
 after_success:
-  - CODECLIMATE_REPO_TOKEN=f3b1565e5d9329ead67596eb5544cfd596a2eec3 codeclimate-test-reporter
+  - CODECLIMATE_REPO_TOKEN=15edd3442e4862838abb2b001c89c5adc3847a0e2f3f030e7eee1ffebd42d5eb codeclimate-test-reporter
