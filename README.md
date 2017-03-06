@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/viatoriche/microservices.svg?branch=master)](https://travis-ci.org/viatoriche/microservices)
+
 **Status**: lib is under active development.
 
 # [Microservices](https://pypi.python.org/pypi/microservices/)
