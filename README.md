@@ -1,8 +1,9 @@
-[![Build Status](https://travis-ci.org/viatoriche/microservices.svg?branch=master)](https://travis-ci.org/viatoriche/microservices)
+# [Microservices](https://pypi.python.org/pypi/microservices/)
 
 **Status**: lib is under active development.
 
-# [Microservices](https://pypi.python.org/pypi/microservices/)
+[![Build Status][travis-image]][travis-link]
+[![PyPI Version][pypi-image]][pypi-link]
 
 Build microservices and client easily.
 
@@ -278,4 +279,7 @@ queue.publish({'data': 'Hello, world'})
 Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `flask_api`.
 
 [pypi-link]: https://pypi.python.org/pypi/microservices/
+[pypi-image]: http://img.shields.io/pypi/v/microservices.svg
+[travis-image]: https://travis-ci.org/viatoriche/microservices.svg?branch=master
+[travis-link]: https://travis-ci.org/viatoriche/microservices
 [flask-api-link]: https://github.com/tomchristie/flask-api
