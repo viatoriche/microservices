@@ -3,6 +3,8 @@
 **Status**: lib is under active development.
 
 [![Build Status][travis-image]][travis-link]
+[![Code Climate][codeclimate-image]][codeclimate-link]
+[![Test Coverage][coverage-image]][coverage-link]
 [![PyPI Version][pypi-image]][pypi-link]
 
 Build microservices and client easily.
@@ -283,3 +285,7 @@ Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `f
 [travis-image]: https://travis-ci.org/viatoriche/microservices.svg?branch=master
 [travis-link]: https://travis-ci.org/viatoriche/microservices
 [flask-api-link]: https://github.com/tomchristie/flask-api
+[codeclimate-image]: https://codeclimate.com/github/viatoriche/microservices/badges/gpa.svg
+[codeclimate-link]: https://codeclimate.com/github/viatoriche/microservices
+[coverage-link]: https://codeclimate.com/github/viatoriche/microservices/coverage
+[coverage-image]: https://codeclimate.com/github/viatoriche/microservices/badges/coverage.svg
