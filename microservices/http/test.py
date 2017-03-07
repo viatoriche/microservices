@@ -47,12 +47,11 @@ def patch_requests(request):
 
 class TestService(TestHTTP):
     def test_service(self):
+        from microservices.http.resources import ResourceMarker
 
         @self.app.route(
             '/',
-            resource=dict(
-                url=True,
-            ),
+            resource=ResourceMarker(),
         )
         def root():
             from flask import request
@@ -62,9 +61,7 @@ class TestService(TestHTTP):
 
         @self.app.route(
             '/test',
-            resource=dict(
-                url=True,
-            ),
+            resource=ResourceMarker(),
         )
         def test():
             from flask import request

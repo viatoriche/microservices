@@ -156,6 +156,8 @@ class ResourceMarker(dict):
         """
         if url_params is None:
             url_params = {}
+        if schema is None:
+            schema = ResourceSchema()
         super(ResourceMarker, self).__init__(
             schema=schema,
             url=url,
