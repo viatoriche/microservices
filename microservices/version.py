@@ -1,4 +1,4 @@
-from six import print_
+import sys
 
 MAJOR = 0
 MINOR = 27
@@ -10,4 +10,4 @@ def get_version(suffix=''):  # pragma: no cover
 
 
 if __name__ == '__main__':
-    print_(get_version())  # pragma: no cover
+    sys.stdout.write(get_version())
