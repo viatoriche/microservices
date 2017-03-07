@@ -10,4 +10,4 @@ def get_version(suffix=''):  # pragma: no cover
 
 
 if __name__ == '__main__':
-    sys.stdout.write(get_version())
+    sys.stdout.write(get_version())  # pragma: no cover
