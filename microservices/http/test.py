@@ -1,8 +1,10 @@
-import unittest
 import json
-from microservices.utils import set_logging
-from flask_testing import TestCase
+import unittest
+
 import six
+from flask_testing import TestCase
+
+from microservices.utils import set_logging
 
 set_logging()
 
@@ -233,7 +235,6 @@ class TestSchemaRenderer(TestHTTP):
         schema_renderer = SchemaRenderer(options, resource, data)
         from flask import request
 
-
         request._data = {
             'request_data': 'tested',
         }
@@ -261,7 +262,6 @@ class TestSchemaRenderer(TestHTTP):
 
 
 class TestHelpers(TestHTTP):
-
     def test_url_resource(self):
         from microservices.http.helpers import url_resource
         from microservices.http.resources import ResourceMarker

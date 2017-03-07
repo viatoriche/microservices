@@ -1,9 +1,11 @@
 import warnings
 
+from microservices.helpers import SmartDict
+
 warnings.simplefilter('default')
 
 
-class BaseResourceSchema(dict):
+class BaseResourceSchema(SmartDict):
     def __init__(
             self,
             response=None,
@@ -137,7 +139,7 @@ class ResourceSchema(BaseResourceSchema):
         )
 
 
-class ResourceMarker(dict):
+class ResourceMarker(SmartDict):
     def __init__(
             self,
             schema=None,
