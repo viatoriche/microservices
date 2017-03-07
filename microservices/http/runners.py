@@ -1,4 +1,4 @@
-def base_run(app, port=5000, **kwargs):
+def base_run(app, port=5000, **kwargs):  # pragma: no cover
     """Run app in base run, for debugging and testing
 
     :param app: wsgi application, ex. Microservice instance
@@ -9,7 +9,8 @@ def base_run(app, port=5000, **kwargs):
     app.run(port=port, **kwargs)
 
 
-def gevent_run(app, port=5000, log=None, error_log=None, address='', monkey_patch=True, start=True, **kwargs):
+def gevent_run(app, port=5000, log=None, error_log=None, address='',
+               monkey_patch=True, start=True, **kwargs):  # pragma: no cover
     """Run your app in gevent.wsgi.WSGIServer
 
     :param app: wsgi application, ex. Microservice instance
@@ -32,13 +33,14 @@ def gevent_run(app, port=5000, log=None, error_log=None, address='', monkey_patc
         monkey.patch_all()
 
     from gevent.wsgi import WSGIServer
-    http_server = WSGIServer((address, port), app, log=log, error_log=error_log, **kwargs)
+    http_server = WSGIServer((address, port), app, log=log, error_log=error_log,
+                             **kwargs)
     if start:
         http_server.serve_forever()
     return http_server
 
 
-def tornado_start():
+def tornado_start():  # pragma: no cover
     """Just start tornado ioloop
 
     :return: None
@@ -46,14 +48,16 @@ def tornado_start():
     from tornado.ioloop import IOLoop
     IOLoop.instance().start()
 
-def tornado_stop():
+
+def tornado_stop():  # pragma: no cover
     """Just stop tornado ioloop"""
     from tornado.ioloop import IOLoop
     IOLoop.instance().stop()
 
 
-def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey_patch=None, Container=None,
-                Server=None, threadpool=None):
+def tornado_run(app, port=5000, address="", use_gevent=False, start=True,
+                monkey_patch=None, Container=None,
+                Server=None, threadpool=None):  # pragma: no cover
     """Run your app in one tornado event loop process
 
     :param app: wsgi application, Microservice instance
@@ -110,7 +114,6 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey
 
         CustomWSGIContainer = ThreadPoolWSGIContainer
 
-
     http_server = Server(CustomWSGIContainer(app))
     http_server.listen(port, address)
     if start:
@@ -118,7 +121,8 @@ def tornado_run(app, port=5000, address="", use_gevent=False, start=True, monkey
     return http_server
 
 
-def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, Container=None, Server=None, threadpool=None):
+def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None,
+                     Container=None, Server=None, threadpool=None):  # pragma: no cover
     """Combine servers in one tornado event loop process
 
     :param configs: [
@@ -155,7 +159,8 @@ def tornado_combiner(configs, use_gevent=False, start=True, monkey_patch=None, C
         app = config['app']
         port = config.get('port', 5000)
         address = config.get('address', '')
-        server = tornado_run(app, use_gevent=use_gevent, port=port, monkey_patch=False, address=address, start=False,
+        server = tornado_run(app, use_gevent=use_gevent, port=port,
+                             monkey_patch=False, address=address, start=False,
                              Container=Container,
                              Server=Server, threadpool=threadpool)
         servers.append(server)

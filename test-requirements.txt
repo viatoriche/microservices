@@ -3,3 +3,4 @@ coverage
 flake8
 python-coveralls
 codeclimate-test-reporter
+flask-testing

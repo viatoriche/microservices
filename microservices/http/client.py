@@ -7,6 +7,7 @@ from microservices.helpers.logs import InstanceLogger
 from microservices.utils import get_logger
 
 
+@six.python_2_unicode_compatible
 class ResponseError(Exception):
     def __init__(self, response, description, *args, **kwargs):
         """Exception
@@ -23,13 +24,14 @@ class ResponseError(Exception):
         self.content = response.content
         super(ResponseError, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return 'Error status code: {}. Description: {}'.format(self.response.status_code, self.description)
+    def __repr__(self):  # pragma: no cover
+        return 'Error status code: {}. Description: {}'.format(
+            self.response.status_code, self.description)
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return self.__repr__()
 
-    def __unicode__(self):
+    def __unicode__(self):  # pragma: no cover
         return self.__str__().decode()
 
 
@@ -88,7 +90,8 @@ class _requests_method(object):
         resource = self.build_resource(resources)
         if data is not None:
             kwargs['json'] = data
-        url = self.client.url_for(resource, query, params=params, fragment=fragment,
+        url = self.client.url_for(resource, query, params=params,
+                                  fragment=fragment,
                                   keep_blank_values=keep_blank_values)
         self.logger.info('Request %s for %s', self.method, url)
         response = requests.request(self.method, url, timeout=timeout, **kwargs)
@@ -124,7 +127,8 @@ class Client(object):
     ok_statuses = (200, 201, 202,)
     to_none_statuses = (404,)
 
-    def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None, empty_to_none=True, close_slash=True,
+    def __init__(self, endpoint, ok_statuses=None, to_none_statuses=None,
+                 empty_to_none=True, close_slash=True,
                  logger=None, name=None, keep_blank_values=True):
         """Create a client
 
@@ -157,23 +161,27 @@ class Client(object):
         self.keep_blank_values = keep_blank_values
         self.endpoint = endpoint
         self.path = parsed_url.path
-        self.query = urlparse.parse_qs(parsed_url.query, keep_blank_values=self.keep_blank_values)
+        self.query = urlparse.parse_qs(parsed_url.query,
+                                       keep_blank_values=self.keep_blank_values)
         self.fragment = parsed_url.fragment
         self.params = parsed_url.params
         self.name = name
-        self.logger.debug('Client built, endpoint: "%s", path: "%s", query: %s, params: %s, fragment: %s',
-                          self.endpoint, self.path,
-                          self.query, self.params, self.fragment)
+        self.logger.debug(
+            'Client built, endpoint: "%s", path: "%s", query: %s, params: %s, fragment: %s',
+            self.endpoint, self.path,
+            self.query, self.params, self.fragment)
 
     def __str__(self):
         return self.name
 
     @staticmethod
     def get_endpoint_from_parsed_url(parsed_url):
-        url_list = [(lambda: x if e < 2 else '')() for e, x in enumerate(list(parsed_url))]
+        url_list = [(lambda: x if e < 2 else '')() for e, x in
+                    enumerate(list(parsed_url))]
         return urlparse.urlunparse(url_list)
 
-    def url_for(self, resource='', query=None, params='', fragment='', keep_blank_values=None):
+    def url_for(self, resource='', query=None, params='', fragment='',
+                keep_blank_values=None):
         """Generate url for resource
 
         Use endpoint for generation
@@ -209,7 +217,8 @@ class Client(object):
             if keep_blank_values is None:
                 keep_blank_values = self.keep_blank_values
             if isinstance(query, six.string_types):
-                query = urlparse.parse_qs(query, keep_blank_values=keep_blank_values)
+                query = urlparse.parse_qs(query,
+                                          keep_blank_values=keep_blank_values)
             req_query = dict(self.query)
             req_query.update(query)
             req_query = urlencode(req_query, doseq=1)
@@ -242,7 +251,8 @@ class Client(object):
                 result = None
             elif status_code not in self.ok_statuses and status_code not in self.to_none_statuses:
                 raise ResponseError(response,
-                                    'Status code {} not in ok_statuses {}'.format(status_code, self.ok_statuses))
+                                    'Status code {} not in ok_statuses {}'.format(
+                                        status_code, self.ok_statuses))
         if response_key is not None and self.empty_to_none and result is not None and not result:
             result = None
 

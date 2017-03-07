@@ -1,4 +1,5 @@
-def gevent_run(app, monkey_patch=True, start=True, debug=False, **kwargs):
+def gevent_run(app, monkey_patch=True, start=True, debug=False,
+               **kwargs):  # pragma: no cover
     """Run your app in gevent.spawn, run simple loop if start == True
 
     :param app: queues.Microservice instance

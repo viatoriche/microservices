@@ -39,5 +39,5 @@ class InstanceLogger(object):
     def __getattr__(self, item):
         if item in self._message_methods:
             return InstanceMessage(self.instance, self.logger, item, self.delimiter)
-        else:
+        else:  # pragma: no cover
             return getattr(self.logger, item)

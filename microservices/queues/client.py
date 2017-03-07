@@ -24,7 +24,7 @@ class _exchange(object):
         self.name = name
         self.routing_key = routing_key
         if logger is None:
-            logger = _logger
+            logger = _logger  # pragma: no cover
         self.logger = logger
         self.logger.debug('Exchange "%s" built, routing_key: %s', self.name,
                           self.routing_key if not self.routing_key is None else '')
@@ -56,7 +56,7 @@ class _queue(object):
         self.client = client
         self.name = name
         if logger is None:
-            logger = _logger
+            logger = _logger  # pragma: no cover
         self.logger = logger
         self.logger.debug('Queue "%s" built', self.name)
 
@@ -89,7 +89,7 @@ class Client(object):
         if name is None:
             try:
                 name = '<client: {}>'.format(self.connection.as_uri())
-            except:
+            except:  # pragma: no cover
                 # Errors with filesystem transport
                 name = '<client: {}>'.format(self.connection.transport_cls)
 
@@ -121,7 +121,7 @@ class Client(object):
         """
 
         if not connection:
-            connection = self.default_connection
+            connection = self.default_connection  # pragma: no cover
 
         if isinstance(connection, str):
             connection = {'hostname': connection}
@@ -143,7 +143,7 @@ class Client(object):
         :param options: additional options for Exchange creation
         """
         if queues is None:
-            queues = []
+            queues = []  # pragma: no cover
 
         with self.connections[self.connection].acquire() as conn:
             exchange = Exchange(name, type=type, channel=conn, **options)

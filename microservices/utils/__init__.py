@@ -1,12 +1,11 @@
 import collections
 import six
-import datetime
 import time
 
 try:
     import gevent
     use_gevent = True
-except ImportError:
+except ImportError:  # pragma: no cover
     use_gevent = False
 
 def get_template_source(jinja_env, template_name):
@@ -53,14 +52,14 @@ def dict_update(d, u):
     return d
 
 
-def is_iterable(obj):
+def is_iterable(obj):  # pragma: no cover
     return isinstance(obj, collections.Iterable)
 
 
 class GeventSleep(object):
     """Smart switch helper for best perfomance"""
 
-    def __call__(self, seconds=None):
+    def __call__(self, seconds=None):  # pragma: no cover
         if seconds is None:
             return
 
@@ -72,7 +71,7 @@ class GeventSleep(object):
 class GeventSwitch(object):
     """Smart switch helper for best perfomance"""
 
-    def __init__(self, max_calls=100, sleep_seconds=0):
+    def __init__(self, max_calls=100, sleep_seconds=0):  # pragma: no cover
         """Gevent switcher
 
         :param max_calls: count of call for switch
@@ -82,7 +81,7 @@ class GeventSwitch(object):
         self.sleep_seconds = sleep_seconds
         self._sleep = GeventSleep()
 
-    def __call__(self, immediate=False, sleep=None):
+    def __call__(self, immediate=False, sleep=None):  # pragma: no cover
         if use_gevent:
             self._calls += 1
             if self._calls >= self.max_calls or immediate:

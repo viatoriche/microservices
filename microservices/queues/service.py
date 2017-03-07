@@ -10,6 +10,7 @@ from microservices.helpers.logs import InstanceLogger
 
 _logger = get_logger(__name__)
 
+
 class HandlerError(Exception):
     pass
 
@@ -39,14 +40,15 @@ class Rule(object):
         self.logger.info('Data (len: %s) received', len(body))
         try:
             self.handler(body, HandlerContext(message, self))
-        except Exception as e:
-            self.logger.exception(e)
+        except Exception:
+            self.logger.exception('Something happened in user handler')
             raise HandlerError('Something happened in user handler')
         if self.autoack:
             try:
                 message.ack()
-            except MessageStateError as e:
-                self.logger.warning('ACK() was called in handler?')
+            except MessageStateError:
+                self.logger.warning(
+                    'ACK() was called in handler?')
 
 
 class HandlerContext(object):
@@ -91,9 +93,9 @@ class Microservice(object):
         if name is None:
             try:
                 name = '<microservice: {}>'.format(self.connection.as_uri())
-            except:
-                # Errors with filesystem transport
-                name = '<microservice: {}>'.format(self.connection.transport_cls)
+            except:  # pragma no cover
+                name = '<microservice: {}>'.format(
+                    self.connection.transport_cls)  # pragma: no cover
 
         self.name = name
         self._stop = False
@@ -111,7 +113,7 @@ class Microservice(object):
         :rtype: Connection
         """
         if not connection:
-            connection = self.connection
+            connection = self.connection  # pragma: no cover
 
         if isinstance(connection, str):
             connection = {'hostname': connection}
@@ -121,7 +123,8 @@ class Microservice(object):
 
         return connection
 
-    def add_queue_rule(self, handler, name, autoack=True, prefetch_size=0, prefetch_count=0, **kwargs):
+    def add_queue_rule(self, handler, name, autoack=True, prefetch_size=0,
+                       prefetch_count=0, **kwargs):
         """Add queue rule to Microservice
 
         :param prefetch_count: count of messages for getting from mq
@@ -134,7 +137,8 @@ class Microservice(object):
         """
 
         rule = Rule(name, handler, self.logger, autoack=autoack, **kwargs)
-        consumer = Consumer(self.connection, queues=[Queue(rule.name)], callbacks=[rule.callback], auto_declare=True)
+        consumer = Consumer(self.connection, queues=[Queue(rule.name)],
+                            callbacks=[rule.callback], auto_declare=True)
         consumer.qos(prefetch_count=prefetch_count, prefetch_size=prefetch_size)
         self.consumers.append(consumer)
         self.logger.debug('Rule "%s" added!', rule.name)
@@ -147,7 +151,8 @@ class Microservice(object):
         self._stop = True
         self.logger.info('Try to stop microservice draining events')
 
-    def queue(self, name, autoack=True, prefetch_size=0, prefetch_count=0, **kwargs):
+    def queue(self, name, autoack=True, prefetch_size=0, prefetch_count=0,
+              **kwargs):
         """Decorator for handler function
 
         >>>app = Microservice()
@@ -164,7 +169,9 @@ class Microservice(object):
         """
 
         def decorator(f):
-            self.add_queue_rule(f, name, autoack=autoack, prefetch_size=prefetch_size, prefetch_count=prefetch_count,
+            self.add_queue_rule(f, name, autoack=autoack,
+                                prefetch_size=prefetch_size,
+                                prefetch_count=prefetch_count,
                                 **kwargs)
             return f
 
@@ -176,8 +183,9 @@ class Microservice(object):
             try:
                 self.connection.connect()
                 break
-            except Exception as e:
-                self.logger.exception(e)
+            except Exception:  # pragma: no cover
+                self.logger.exception(
+                    'Error when try to connect')  # pragma: no cover
 
     def revive(self):
         for i, consumer in enumerate(self.consumers):
@@ -185,38 +193,42 @@ class Microservice(object):
             consumer.channel = self.connection
             try:
                 consumer.revive(consumer.channel)
-            except Exception as e:
-                self.logger.exception(e)
+            except Exception:  # pragma: no cover
+                self.logger.exception(
+                    'Error when try to revive')  # pragma: no cover
 
     @property
     def stopped(self):
         return self._stopped
 
     def drain_events(self, infinity=True):
+
         with nested(*self.consumers):
             while not self._stop:
                 try:
                     self.connection.drain_events(timeout=self.timeout)
                 except socket.timeout:
                     if not infinity:
-                        return
+                        break
                 except Exception as e:
                     if not self.connection.connected and not self._stop:
-                        self.logger.error('Connection to mq has broken off. Try to reconnect')
+                        self.logger.error(
+                            'Connection to mq has broken off. Try to reconnect')
                         self.connect()
                         self.revive()
-                        return
+                        break
                     elif not self._stop and not isinstance(e, HandlerError):
-                        self.logger.exception(e)
-                        self.logger.error('Something wrong! Try to restart the loop')
+                        self.logger.exception(
+                            'Something wrong! Try to restart the loop')
                         self.revive()
-                        return
+                        break
                     elif isinstance(e, HandlerError):
                         pass
-                    else:
-                        self.logger.exception(e)
-        self._stopped = True
-        self.logger.info('Stopped draining events.')
+                    else:  # pragma: no cover
+                        self.logger.exception('Unknown error')  # pragma: no cover
+        if self._stop:
+            self._stopped = True
+            self.logger.info('Stopped draining events.')
 
     def run(self, debug=False):
         """Run microservice in loop, where handle connections
