@@ -37,7 +37,7 @@ setup(
     download_url='https://github.com/viatoriche/microservices/tarball/{}'.format(
         version),
     install_requires=[
-        'Flask-API==0.6.9', 'Flask>=0.10.1', 'requests>=2.10.0',
+        'Flask-API==0.7.1', 'Flask>=0.10.1', 'requests>=2.10.0',
         'six', 'Markdown==2.6.6', 'kombu>=3.0.35'
     ],
 )
