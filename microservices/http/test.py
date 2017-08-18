@@ -83,7 +83,7 @@ class TestClient(unittest.TestCase):
     def test_client(self):
         from microservices.http.client import Client, ResponseError
 
-        valid_method = 'get'
+        valid_method = 'GET'
         valid_url = 'http://user:password@endpoint:8000/test/1/'
         valid_json = None
 
@@ -111,7 +111,7 @@ class TestClient(unittest.TestCase):
         client.get('jopa', response_key='response')
 
         valid_json = {'test': 'tested'}
-        valid_method = 'post'
+        valid_method = 'POST'
         valid_url = 'http://user:password@endpoint:8000/test/1/jopa/?test=tested'
         client.post('jopa', query={'test': 'tested'}, response_key='response',
                     data=valid_json)
@@ -136,7 +136,7 @@ class TestClient(unittest.TestCase):
                         to_none_statuses=(404,))
         valid_url = 'http://endpoint/'
         valid_json = None
-        valid_method = 'get'
+        valid_method = 'GET'
         patch_requests(
             MockRequest(handler=test_request, _content=b'{"response": "tested"}',
                         status_code=404))

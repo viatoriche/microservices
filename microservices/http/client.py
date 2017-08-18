@@ -35,69 +35,6 @@ class ResponseError(Exception):
         return self.__str__().decode()
 
 
-class _client_request(object):
-    def __init__(self, client, resources, method='get'):
-        """Request class
-
-        :param client: instance of Client
-        :param resources: list of resource uri ['one', 'two', 'three'] -> /one/two/three/
-        :param method: str for method name, get, post, delete, patch, put etc
-        """
-        self.client = client
-        self.resources = resources
-        self.method = method
-        self.logger = client.logger
-
-    def __call__(self, *args, **kwargs):
-        method = getattr(self.client, self.method)
-        args = tuple(self.resources) + args
-        return method(*args, **kwargs)
-
-
-class _requests_method(object):
-    def __init__(self, client, method):
-        """method
-
-        :param client: instance of Client
-        :param method: str, post, get etc...
-        """
-        self.method = method
-        self.client = client
-        self.close_slash = client.close_slash
-        self.logger = client.logger
-
-    def build_resource(self, resources):
-        """Build uri from list
-
-        :param resources: ['one', 'two', 'three']
-        :return: one/two/three
-        """
-        resource = '/'.join(resources)
-        self.logger.debug('Resource "%s" built from %s', resource, resources)
-        return resource
-
-    def __call__(self, *resources, **kwargs):
-        response_key = kwargs.pop('response_key', None)
-        key = kwargs.pop('key', None)
-        if key is not None:
-            response_key = key
-        query = kwargs.pop('query', None)
-        data = kwargs.pop('data', None)
-        fragment = kwargs.pop('fragment', '')
-        params = kwargs.pop('params', '')
-        keep_blank_values = kwargs.pop('keep_blank_values', None)
-        timeout = kwargs.pop('timeout', 60)
-        resource = self.build_resource(resources)
-        if data is not None:
-            kwargs['json'] = data
-        url = self.client.url_for(resource, query, params=params,
-                                  fragment=fragment,
-                                  keep_blank_values=keep_blank_values)
-        self.logger.info('Request %s for %s', self.method, url)
-        response = requests.request(self.method, url, timeout=timeout, **kwargs)
-        return self.client.handle_response(response, response_key=response_key)
-
-
 class Resource(object):
     def __init__(self, client, resources):
         """Resource
@@ -110,7 +47,12 @@ class Resource(object):
         self.logger = client.logger
 
     def __getattr__(self, item):
-        return _client_request(self.client, self.resources, item)
+        return lambda *resources, **kwargs: self.request(item, *resources,
+                                                         **kwargs)
+
+    def request(self, method, *resources, **kwargs):
+        resources = tuple(self.resources) + resources
+        return self.client.request(method, *resources, **kwargs)
 
     def resource(self, *resources):
         """Resource builder with resources url
@@ -179,6 +121,16 @@ class Client(object):
         url_list = [(lambda: x if e < 2 else '')() for e, x in
                     enumerate(list(parsed_url))]
         return urlparse.urlunparse(url_list)
+
+    def build_resource(self, resources):
+        """Build uri from list
+
+        :param resources: ['one', 'two', 'three']
+        :return: one/two/three
+        """
+        resource = '/'.join(resources)
+        self.logger.debug('Resource "%s" built from %s', resource, resources)
+        return resource
 
     def url_for(self, resource='', query=None, params='', fragment='',
                 keep_blank_values=None):
@@ -258,8 +210,35 @@ class Client(object):
 
         return result
 
-    def __getattr__(self, item):
-        return _requests_method(self, item)
+    def __getattr__(self, method):
+        return lambda *resources, **kwargs: self.request(method, *resources,
+                                                         **kwargs)
+
+    def request(self, method, *resources, **kwargs):
+        method = method.upper()
+        response_key = kwargs.pop('response_key', None)
+        key = kwargs.pop('key', None)
+        if key is not None:
+            response_key = key
+        query = kwargs.pop('query', None)
+        data = kwargs.pop('data', None)
+        fragment = kwargs.pop('fragment', '')
+        params = kwargs.pop('params', '')
+        keep_blank_values = kwargs.pop('keep_blank_values', None)
+        timeout = kwargs.pop('timeout', 60)
+        resource = self.build_resource(resources)
+        content_type = kwargs.pop('content_type', 'json')
+        if data is not None:
+            if 'json' in content_type:
+                kwargs['json'] = data
+            if content_type == 'body':
+                kwargs['data'] = data
+        url = self.url_for(resource, query, params=params,
+                           fragment=fragment,
+                           keep_blank_values=keep_blank_values)
+        self.logger.info('Request %s for %s', self.method, url)
+        response = requests.request(method, url, timeout=timeout, **kwargs)
+        return self.handle_response(response, response_key=response_key)
 
     def resource(self, *resources):
         """Generate Resource object with resources
