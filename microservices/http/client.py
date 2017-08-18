@@ -236,7 +236,7 @@ class Client(object):
         url = self.url_for(resource, query, params=params,
                            fragment=fragment,
                            keep_blank_values=keep_blank_values)
-        self.logger.info('Request %s for %s', self.method, url)
+        self.logger.info('Request %s for %s', method, url)
         response = requests.request(method, url, timeout=timeout, **kwargs)
         return self.handle_response(response, response_key=response_key)
 
