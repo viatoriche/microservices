@@ -4,7 +4,7 @@
 
 [![Build Status][travis-image]][travis-link]
 [![Code Climate][codeclimate-image]][codeclimate-link]
-[![Test Coverage][coverage-image]][coverage-link]
+[![Coverage Status](https://coveralls.io/repos/github/viatoriche/microservices/badge.svg?branch=master)](https://coveralls.io/github/viatoriche/microservices?branch=master)
 [![PyPI Version][pypi-image]][pypi-link]
 
 Build microservices and client easily.
