@@ -12,3 +12,5 @@ install:
 script: ./runtests.sh
 after_success:
   - CODECLIMATE_REPO_TOKEN=15edd3442e4862838abb2b001c89c5adc3847a0e2f3f030e7eee1ffebd42d5eb codeclimate-test-reporter
+  - pip install coveralls
+  - coveralls
