@@ -1,7 +1,7 @@
 from microservices.http.service import Microservice
 
 from microservices.http.resources import ResourceMarker, ResourceSchema, BrowserResourceSchema
-from flask import request, url_for
+from flask import request
 import datetime
 
 app = Microservice(__name__)
