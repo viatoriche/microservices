@@ -127,7 +127,7 @@ class TestService(unittest.TestCase):
             if len(handlers_autoacks) == 7 and len(handlers_noacks) == 7:
                 break
             duration = time.time() - start
-            if duration > 5:
+            if duration > 5: # pragma no cover
                 microservice.stop()
                 raise AssertionError(
                     'Timeout error. '

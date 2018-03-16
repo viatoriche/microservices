@@ -347,7 +347,7 @@ class Microservice(object):
             if self.with_pool:
                 try:
                     self.pool.join()
-                    self.drain_results()
+                    self.drain_results() # pragma: no cover
                 except AssertionError:
                     pass
             self._stopped = True
