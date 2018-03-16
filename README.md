@@ -92,7 +92,7 @@ This will handle JSON or form data by default.
 The following example demonstrates a simple API for creating,
 listing, updating and deleting notes.
 
-```
+```python
 
 from microservices.http.service import Microservice
 from microservices.http.runners import base_run as run
@@ -190,7 +190,7 @@ and `DELETE` API requests.
 
 Client app example:
 
-```
+```python
 from microservices.http.client import Client
 from microservices.utils import set_logging, get_logger
 
@@ -219,7 +219,7 @@ logger.info(one_two_resource.post(data={'test': 'tested'}))
 
 Result:
 
-```
+```commandline
 2016-06-16 14:11:10,997 - microservices.http.client - INFO - get: http://localhost:5000/
 2016-06-16 14:11:11,000 - requests.packages.urllib3.connectionpool - INFO - Starting new HTTP connection (1): localhost
 2016-06-16 14:11:11,002 - microservices client - INFO - POST something for hello
@@ -251,7 +251,7 @@ Result:
 Microservices 0.18.0+ support working with queues based on [kombu](https://github.com/celery/kombu)
 
 Example of service usage:
-```
+```python
 from microservices.queues.service import Microservice
 
 # default uri: amqp:///
@@ -267,13 +267,22 @@ if __name__ == '__main__':
 ```
 
 Example of client usage:
-```
+```python
 from microservices.queues.client import Client
 
 client = Client()
 
 queue = client.queue('basic')
 queue.publish({'data': 'Hello, world'})
+```
+
+Workers and ThreadPool:
+```python
+from microservices.queues.service import Microservice
+
+# Run application with 10 parallel's workers (microprocessing.pool.ThreadPool)
+app = Microservice(workers=10)
+
 ```
 
 ## Credits

@@ -11,7 +11,7 @@ class TestService(unittest.TestCase):
         from microservices.queues.client import Client
         from kombu.connection import Connection
 
-        microservice = Microservice('memory:///', timeout=1)
+        microservice = Microservice('memory:///', timeout=0.01)
 
         connection = Connection('memory:///')
 
@@ -70,8 +70,6 @@ class TestService(unittest.TestCase):
 
         err_ev_1 = Event()
         err_ev_2 = Event()
-        err_ev_3 = Event()
-        err_ev_4 = Event()
 
         @microservice.queue('error1', connection=connection)
         def handle_error(data, context):
@@ -83,16 +81,6 @@ class TestService(unittest.TestCase):
             err_ev_2.set()
             raise RuntimeError('Error 2')
 
-        @microservice.queue('error3', connection=connection)
-        def handle_error3(data, context):
-            err_ev_3.set()
-            microservice.connection.close()
-            raise RuntimeError('Error 3')
-
-        @microservice.queue('wait_stop', connection=connection)
-        def handle_wait(data, context):
-            err_ev_4.set()
-
         run_thread = Thread(target=microservice.run, kwargs={'debug': True})
         run_thread.start()
         client.queue('error1').publish('123')
@@ -101,12 +89,54 @@ class TestService(unittest.TestCase):
         err_ev_2.wait(timeout=2)
         self.assertEqual(err_ev_1.is_set(), True)
         self.assertEqual(err_ev_2.is_set(), True)
-        client.queue('error3').publish('123')
-        err_ev_3.wait(timeout=3)
-        client.queue('wait_stop').publish('123')
-        err_ev_4.wait(timeout=3)
-        self.assertEqual(err_ev_4.is_set(), True)
         microservice.stop()
         run_thread.join(timeout=10)
         self.assertEqual(run_thread.is_alive(), False)
         self.assertEqual(microservice.stopped, True)
+
+    def test_workers(self):
+        from microservices.queues.service import Microservice
+        from microservices.queues.client import Client
+
+        microservice = Microservice('memory:///', timeout=0.01, workers=5)
+
+        client = Client('memory:///')
+
+        handlers_autoacks = []
+        handlers_noacks = []
+
+        @microservice.queue('workers_autoack', autoack=True)
+        def handler_autoack(data, context):
+            handlers_autoacks.append(context)
+
+        @microservice.queue('workers_noack', autoack=False)
+        def handler_noack(data, context):
+            handlers_noacks.append(context)
+            context.message.ack()
+
+        run_thread = Thread(target=microservice.run, kwargs={'debug': True})
+        run_thread.start()
+
+        for _ in range(7):
+            client.publish_to_queue('workers_autoack', 'autoack')
+            client.publish_to_queue('workers_noack', 'noack')
+
+        import time
+        start = time.time()
+        while True:
+            if len(handlers_autoacks) == 7 and len(handlers_noacks) == 7:
+                break
+            duration = time.time() - start
+            if duration > 5: # pragma no cover
+                microservice.stop()
+                raise AssertionError(
+                    'Timeout error. '
+                    'Len autoacks: %s, Len noacks: %s' % (
+                         len(handlers_autoacks), len(handlers_noacks)
+                    )
+                )
+
+        microservice.stop()
+        run_thread.join(timeout=10)
+        self.assertTrue(all((context.message.acknowledged for context in handlers_autoacks)))
+        self.assertTrue(all((context.message.acknowledged for context in handlers_noacks)))
