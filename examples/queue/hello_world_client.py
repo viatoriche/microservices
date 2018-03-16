@@ -4,4 +4,5 @@ client = Client()
 
 q = client.queue('basic_queue')
 
-q.publish({"message": "Hello, world!"})
+for _ in range(20):
+    q.publish({"message": "Hello, world!"})

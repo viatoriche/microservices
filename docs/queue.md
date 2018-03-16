@@ -4,7 +4,7 @@
 
 Queue implementation of microservices based on kombu
 
-```
+```python
 from microservices.queues.service import Microservice
 
 app = Microservice()
@@ -13,7 +13,7 @@ app = Microservice()
 Where `app` - is a queue reader service
 
 Basic usage:
-```
+```python
 @app.queue('basic_queue')
 def hello_world(payload, context):
     print(payload)
@@ -21,7 +21,7 @@ def hello_world(payload, context):
 
 And run it
 
-```
+```python
 if __name__ == '__main__':
     app.run(debug=True)
 ```
@@ -80,7 +80,7 @@ Let's write a client for our microservice
 Create a `hello_world_client.py`
 
 And add this code
-```
+```python
 from microservices.queues.client import Client
 
 client = Client()
@@ -106,7 +106,7 @@ Microservices library provide you runners for help deployment.
 
 ### Gevent
 
-```
+```python
 from microservices.queues.runners import gevent_run
 from basic import app
 from microservices.utils import set_logging
@@ -118,6 +118,25 @@ gevent_run(app)
 
 while True:
     gevent.idle()
+```
+
+### Workers and thread pool
+
+Run service with handling messages in thread pool
+
+```python
+
+from microservices.queues.service import Microservice
+
+app = Microservice(workers=10)
+```
+
+```python
+
+from microservices.queues.service import Microservice
+from gevent.pool import Pool
+
+app = Microservice(workers=10, pool_factory=Pool)
 ```
 
 P.S. Queues is a simple!
