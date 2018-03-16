@@ -1,7 +1,7 @@
 import sys
 
 MAJOR = 0
-MINOR = 29
+MINOR = 30
 PATCH = 0
 
 
