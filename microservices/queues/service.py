@@ -1,4 +1,6 @@
 import socket
+from multiprocessing.pool import ThreadPool
+from time import sleep
 
 import six
 
@@ -7,8 +9,6 @@ from kombu.exceptions import MessageStateError
 from kombu.utils import nested
 from microservices.helpers.logs import InstanceLogger
 from microservices.utils import get_logger
-from time import sleep
-from multiprocessing.pool import ThreadPool
 
 _logger = get_logger(__name__)
 
@@ -84,7 +84,7 @@ class Rule(object):
             try:
                 self.logger.debug('Ack message via autoack')
                 message.ack()
-            except ConnectionError as e: # pragma: no cover
+            except ConnectionError as e:  # pragma: no cover
                 self.logger.error('Connection error: %s when try message.ack',
                                   e.strerror)
             except MessageStateError:
@@ -258,34 +258,49 @@ class Microservice(object):
 
         return decorator
 
-    def connect(self): # pragma no cover
+    def connect(self):  # pragma no cover
         """Try connect to mq"""
         while not self._stop:
             try:
                 self.connection.connect()
                 break
-            except ConnectionError as e: # pragma: no cover
+            except ConnectionError as e:  # pragma: no cover
                 if self.reconnect_enable:
                     self.logger.error(
                         'Connection error, cause: %s. Reconnecting...',
                         e.strerror
                     )
                 else:
+                    self.stop()
                     break
             except Exception:  # pragma: no cover
                 self.logger.exception(
                     'Error when try to connect')  # pragma: no cover
             sleep(self.reconnect_timeout)
 
-    def revive(self): # pragma no cover
-        for i, consumer in enumerate(self.consumers):
-            self.logger.debug('Try revive consumer: %s', i)
-            consumer.channel = self.connection
-            try:
+    def revive(self):  # pragma no cover
+        def _revive():
+            for i, consumer in enumerate(self.consumers):
+                self.logger.debug('Try revive consumer: %s', i)
+                consumer.channel = self.connection
                 consumer.revive(consumer.channel)
+                self.logger.debug('Consumer: %s was revived', i)
+
+        while not self._stop:
+            try:
+                _revive()
+                break
+            except ConnectionError:  # pragma: no cover
+                if self.reconnect_enable:
+                    self.connect()
+                else:
+                    self.stop()
+                    break
             except Exception:  # pragma: no cover
                 self.logger.exception(
                     'Error when try to revive')  # pragma: no cover
+                sleep(self.reconnect_timeout)
+        self.logger.debug('All consumers %s was revived...', len(self.consumers))
 
     @property
     def stopped(self):
@@ -298,13 +313,13 @@ class Microservice(object):
                 callback()
                 self.logger.debug('Called callback. All: %s',
                                   len(self.deferred_callbacks))
-            except ConnectionError as e: # pragma: no cover
+            except ConnectionError as e:  # pragma: no cover
                 self.logger.error(
                     'Connection error when try callback: %s. Cause: %s. '
                     'Message will be handled on next iteration',
                     callback, e.strerror
                 )
-            except Exception: # pragma no cover
+            except Exception:  # pragma no cover
                 self.logger.exception(
                     'Unknown exception when try callback: %s', callback
                 )
@@ -318,7 +333,7 @@ class Microservice(object):
                 except socket.timeout:
                     if not infinity:
                         break
-                except ConnectionError as e: # pragma no cover
+                except ConnectionError as e:  # pragma no cover
                     self.logger.error(
                         'Connection to mq has broken off because: %s. Try to reconnect, %s',
                         e)
@@ -327,7 +342,7 @@ class Microservice(object):
                     break
                 except HandlerError:
                     self.logger.exception('Handler error')
-                except Exception as e: # pragma no cover
+                except Exception as e:  # pragma no cover
                     if not self._stop:
                         self.logger.exception(
                             'Something wrong! Try to restart the loop')
@@ -340,16 +355,21 @@ class Microservice(object):
                 if self.with_pool:
                     try:
                         self.drain_results()
-                    except Exception: # pragma no cover
+                    except Exception:  # pragma no cover
                         self.logger.exception('Unknown error when '
                                               'draining results')
         if self._stop:
             if self.with_pool:
                 try:
                     self.pool.join()
-                    self.drain_results() # pragma: no cover
+                    self.drain_results()  # pragma: no cover
                 except AssertionError:
                     pass
+                except Exception: # pragma: no cover
+                    self.logger.exception(
+                        'Unknown error when '
+                        'draining results'
+                    )
             self._stopped = True
             self.logger.info('Stopped draining events.')
 
