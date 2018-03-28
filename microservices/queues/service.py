@@ -365,7 +365,7 @@ class Microservice(object):
                     self.drain_results()  # pragma: no cover
                 except AssertionError:
                     pass
-                except Exception:
+                except Exception: # pragma: no cover
                     self.logger.exception(
                         'Unknown error when '
                         'draining results'
