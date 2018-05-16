@@ -1,8 +1,8 @@
 import sys
 
 MAJOR = 0
-MINOR = 31
-PATCH = 1
+MINOR = 32
+PATCH = 0
 
 
 def get_version(suffix=''):  # pragma: no cover
