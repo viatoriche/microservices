@@ -129,9 +129,9 @@ class Microservice(object):
 
     connection = 'amqp:///'
 
-    def __init__(self, connection='amqp:///', logger=None, timeout=10, name=None,
+    def __init__(self, connection='amqp:///', logger=None, timeout=1, name=None,
                  workers=None, pool_factory=ThreadPool, reconnect_timeout=1,
-                 reconnect_enable=True):
+                 reconnect_enable=True, workers_override_prefetch=True):
         """Initialization
 
         :type pool_factory: callable object, pool should has property size
@@ -154,6 +154,7 @@ class Microservice(object):
         self.consumers = []
         self.reconnect_timeout = reconnect_timeout
         self.reconnect_enable = reconnect_enable
+        self.workers_override_prefetch = workers_override_prefetch
 
         if name is None:
             try:
@@ -212,7 +213,8 @@ class Microservice(object):
         """
 
         if self.with_pool:
-            prefetch_count = self.workers
+            if self.workers_override_prefetch:
+                prefetch_count = self.workers
             rule = Rule(name, handler, self.logger, autoack=autoack,
                         deferred_callbacks=self.deferred_callbacks,
                         pool=self.pool, **kwargs)
