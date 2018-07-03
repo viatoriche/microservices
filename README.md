@@ -289,7 +289,7 @@ app = Microservice(workers=10)
 
 Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `flask_api`.
 
-[pypi-link]: https://pypi.python.org/pypi/microservices/
+[pypi-link]: https://pypi.org/project/microservices/
 [pypi-image]: http://img.shields.io/pypi/v/microservices.svg
 [travis-image]: https://travis-ci.org/viatoriche/microservices.svg?branch=master
 [travis-link]: https://travis-ci.org/viatoriche/microservices
@@ -298,3 +298,7 @@ Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `f
 [codeclimate-link]: https://codeclimate.com/github/viatoriche/microservices
 [coverage-link]: https://codeclimate.com/github/viatoriche/microservices/coverage
 [coverage-image]: https://codeclimate.com/github/viatoriche/microservices/badges/coverage.svg
+
+## JetBrains Open Source License for All Products
+
+I have a JetBrains Open Source Team license. I can share license for active contributors :3
