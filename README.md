@@ -298,7 +298,3 @@ Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `f
 [codeclimate-link]: https://codeclimate.com/github/viatoriche/microservices
 [coverage-link]: https://codeclimate.com/github/viatoriche/microservices/coverage
 [coverage-image]: https://codeclimate.com/github/viatoriche/microservices/badges/coverage.svg
-
-## JetBrains Open Source License for All Products
-
-I have a JetBrains Open Source Team license. I can share license for active contributors :3
