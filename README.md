@@ -290,7 +290,7 @@ app = Microservice(workers=10)
 Many thanks to [Tom Christie](https://github.com/tomchristie/) for making the `flask_api`.
 
 [pypi-link]: https://pypi.org/project/microservices/
-[pypi-image]: http://img.shields.io/pypi/v/microservices.svg
+[pypi-image]: https://badge.fury.io/py/microservices.svg
 [travis-image]: https://travis-ci.org/viatoriche/microservices.svg?branch=master
 [travis-link]: https://travis-ci.org/viatoriche/microservices
 [flask-api-link]: https://github.com/tomchristie/flask-api
