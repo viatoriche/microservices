@@ -38,6 +38,7 @@ Coming features in version 1.0:
 * ~~SQS, AMQP and other transport protocols for microservices API.~~
 * Full documentation
 * Classes for services building with microservices context.
+* Application layer
 
 ## Installation
 
