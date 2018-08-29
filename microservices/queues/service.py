@@ -151,8 +151,6 @@ class Microservice(object):
 
         self.logger = InstanceLogger(self, logger)
         self.connection = self._get_connection(connection)
-        if immediate_connect:
-            self.connect()
         self.timeout = timeout
         self.consumers = []
         self.reconnect_timeout = reconnect_timeout
@@ -175,6 +173,8 @@ class Microservice(object):
         if workers:
             self.deferred_callbacks = []
             self.pool = pool_factory(workers)
+        if immediate_connect:
+            self.connect()
 
     def __str__(self):
         return self.name
