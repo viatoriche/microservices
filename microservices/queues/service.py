@@ -267,9 +267,10 @@ class Microservice(object):
 
     def connect(self):  # pragma no cover
         """Try connect to mq"""
-        while not self._stop:
+        while not self._stop and not self.connection.connected:
             try:
                 self.connection.connect()
+                self.logger.info('Connected to mq broker')
                 break
             except ConnectionError as e:  # pragma: no cover
                 if self.reconnect_enable:
