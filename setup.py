@@ -38,6 +38,6 @@ setup(
         version),
     install_requires=[
         'Flask-API==1.1.b1', 'requests>=2.10.0',
-        'six', 'Markdown==2.6.6', 'kombu==4.1.0'
+        'six', 'Markdown==3.8.1', 'kombu==4.1.0'
     ],
 )
